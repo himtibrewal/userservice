@@ -10,6 +10,12 @@ public enum ErrorEnum {
      * common errors
      */
 
+    ERROR_UNAUTHENTICATED("SW-401", "invalid User !! Please Login first", HttpStatus.UNAUTHORIZED),
+
+    ERROR_EXPIRED_JWT_TOKEN("SW-401", "Authorization header is invalid", HttpStatus.UNAUTHORIZED),
+
+    ERROR_FORBIDDEN("SW-403", "You don't have permission", HttpStatus.FORBIDDEN),
+
     ERROR_NO_ERROR("SW-200", "NO Error", HttpStatus.OK),
 
     ERROR_ENUM("", "", HttpStatus.OK),
@@ -17,7 +23,6 @@ public enum ErrorEnum {
     ERROR_INTERNAL_SERVER_ERROR("SW-500", "Internal Server Error", INTERNAL_SERVER_ERROR),
 
     ERROR_SQS_CONNECTION("SW-508", "HA-SQS can't connect to SQS", INTERNAL_SERVER_ERROR);
-
 
     private final String code;
 
