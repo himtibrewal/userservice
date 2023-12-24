@@ -20,5 +20,7 @@ public interface AuthService {
 
     void logoutUser();
 
+    String forgetPassword(String email);
+
 
 }

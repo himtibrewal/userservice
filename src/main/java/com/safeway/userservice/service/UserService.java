@@ -10,6 +10,10 @@ import java.util.Optional;
 public interface UserService {
     Optional<User> getUserById(Long id);
 
+    Optional<User> findUserByEmail(String email);
+
+    Optional<User> findUserByMobile(String mobile);
+
     List<User> getAllUser();
 
     User updateUser(Long id, User user);
@@ -19,4 +23,6 @@ public interface UserService {
     void deleteUser(Long id);
 
     Optional<UserDetailsDao> getUserDetails(String username);
+
+    Optional<UserDetailsDao> getUserDetailsById(Long id);
 }

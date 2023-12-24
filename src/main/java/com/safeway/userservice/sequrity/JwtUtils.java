@@ -23,10 +23,10 @@ public class JwtUtils {
     private int jwtExpirationMs;
 
     public String generateJwtToken(UserDetailsImpl userPrincipal) {
-        return generateTokenFromUsername(userPrincipal.getUsername());
+        return generateTokenFromUserId(String.valueOf(userPrincipal.getId()));
     }
 
-    public String generateTokenFromUsername(String username) {
+    public String generateTokenFromUserId(String username) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())

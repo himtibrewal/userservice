@@ -4,7 +4,8 @@ public class SignupRequest {
     private String username;
     private String email;
     private String password;
-    private String phone;
+
+    private String mobile;
 
     public String getUsername() {
         return username;
@@ -30,11 +31,11 @@ public class SignupRequest {
         this.password = password;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getMobile() {
+        return mobile;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
     }
 }

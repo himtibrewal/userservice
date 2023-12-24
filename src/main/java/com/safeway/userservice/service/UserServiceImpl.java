@@ -28,8 +28,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<User> findUserByEmail(String email) {
+        return userRepository.findFirstByEmail(email);
+    }
+
+    @Override
+    public Optional<User> findUserByMobile(String mobile) {
+        return userRepository.findFirstByMobile(mobile);
+    }
+
+    @Override
     public Optional<UserDetailsDao> getUserDetails(String username) {
-        Optional<User> user = userRepository.findByUsername(username);
+        Optional<User> user = userRepository.findFirstByEmail(username);
         if (user.isPresent()) {
             User user1 = user.get();
             UserDetailsDao userDetailsDao = new UserDetailsDao();
@@ -42,7 +52,27 @@ public class UserServiceImpl implements UserService {
             userDetailsDao.setRoles(roleList.stream().map(r -> new Role(r.getRoleId())).collect(Collectors.toList()));
             userDetailsDao.setPermissions(List.of());
             return Optional.of(userDetailsDao);
+        }
+        return Optional.empty();
+    }
 
+
+
+    @Override
+    public Optional<UserDetailsDao> getUserDetailsById(Long id) {
+        Optional<User> user =  getUserById(id);
+        if (user.isPresent()) {
+            User user1 = user.get();
+            UserDetailsDao userDetailsDao = new UserDetailsDao();
+            userDetailsDao.setId(user1.getId());
+            userDetailsDao.setUsername(user1.getUsername());
+            userDetailsDao.setEmail(user1.getEmail());
+            userDetailsDao.setMobile(user1.getMobile());
+            userDetailsDao.setPassword(user1.getPassword());
+            List<UserRoles> roleList = useRolesRepository.findAllByUserId(user.get().getId());
+            userDetailsDao.setRoles(roleList.stream().map(r -> new Role(r.getRoleId())).collect(Collectors.toList()));
+            userDetailsDao.setPermissions(List.of());
+            return Optional.of(userDetailsDao);
         }
         return Optional.empty();
     }
@@ -59,13 +89,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUser(Long id, User user) {
+        userRepository.updateUserById(user.getMobile(), id);
         return null;
     }
 
     @Override
     public User saveUser(User user) {
-        String password = user.getPassword();
-        // user.setPassword(passwordEncoder.encode(password));
         return userRepository.save(user);
     }
 

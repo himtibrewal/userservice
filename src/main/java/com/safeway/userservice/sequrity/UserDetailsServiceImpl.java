@@ -1,6 +1,7 @@
 package com.safeway.userservice.sequrity;
 
 import com.safeway.userservice.dto.UserDetailsDao;
+import com.safeway.userservice.entity.User;
 import com.safeway.userservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,11 +10,14 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Optional;
+
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    UserService userService;
+    private final UserService userService;
 
     @Autowired
     public UserDetailsServiceImpl(UserService userService) {
@@ -21,12 +25,22 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Override
-    @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserDetailsDao user = userService.getUserDetails(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
+        Optional<UserDetailsDao> userDetails = userService.getUserDetails(username);
+        if (userDetails.isPresent()) {
+            return UserDetailsImpl.build(userDetails.get());
+        }
+        // if this is thrown, then we won't generate JWT token.
+        throw new UsernameNotFoundException(username);
+    }
 
-        return UserDetailsImpl.build(user);
+    public UserDetailsImpl loadUserByUserId(String userId) throws UsernameNotFoundException {
+        Optional<UserDetailsDao> userDetails = userService.getUserDetailsById(Long.parseLong(userId));
+        if (userDetails.isPresent()) {
+            return UserDetailsImpl.build(userDetails.get());
+        }
+        // if this is thrown, then we won't generate JWT token.
+        throw new UsernameNotFoundException(userId);
     }
 
 }

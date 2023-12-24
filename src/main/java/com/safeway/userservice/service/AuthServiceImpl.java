@@ -1,5 +1,6 @@
 package com.safeway.userservice.service;
 
+import com.safeway.userservice.dto.EmailDetails;
 import com.safeway.userservice.dto.request.SignInRequest;
 import com.safeway.userservice.dto.request.SignupRequest;
 import com.safeway.userservice.dto.request.TokenRefreshRequest;
@@ -11,6 +12,7 @@ import com.safeway.userservice.repository.UserRepository;
 import com.safeway.userservice.sequrity.JwtUtils;
 import com.safeway.userservice.exception.TokenRefreshException;
 import com.safeway.userservice.sequrity.UserDetailsImpl;
+import com.safeway.userservice.service.admin.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,7 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.safeway.userservice.utils.Commons.generatePassword;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -36,20 +41,24 @@ public class AuthServiceImpl implements AuthService {
 
     private final RefreshTokenService refreshTokenService;
 
+    private final EmailService emailService;
+
     @Autowired
-    public AuthServiceImpl(UserRepository userRepository, AuthenticationManager authenticationManager, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, RefreshTokenService refreshTokenService) {
+    public AuthServiceImpl(UserRepository userRepository, AuthenticationManager authenticationManager, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, RefreshTokenService refreshTokenService, EmailService emailService) {
         this.userRepository = userRepository;
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.passwordEncoder = passwordEncoder;
         this.refreshTokenService = refreshTokenService;
+        this.emailService = emailService;
     }
 
     @Override
     @Transactional
     public SignInResponse loginUser(SignInRequest signInRequest) {
+
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+       // SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String jwt = jwtUtils.generateJwtToken(userDetails);
         List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority()).collect(Collectors.toList());
@@ -62,9 +71,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public User registerUser(SignupRequest signUpRequest) {
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-            throw new RuntimeException("username Already exist");
+            throw new TokenRefreshException("test", "username Already exist");
         }
-        User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(), signUpRequest.getPhone(), passwordEncoder.encode(signUpRequest.getPassword()));
+        User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(), signUpRequest.getMobile(), passwordEncoder.encode(signUpRequest.getPassword()));
 
         // add default country code
         user.setCountryCode("+91");
@@ -78,7 +87,7 @@ public class AuthServiceImpl implements AuthService {
                 .map(refreshTokenService::verifyExpiration)
                 .map(rt -> userRepository.findById(rt.getUserId()).get())
                 .map(user -> {
-                    String token = jwtUtils.generateTokenFromUsername(user.getUsername());
+                    String token = jwtUtils.generateTokenFromUserId(String.valueOf(user.getId()));
                     return new TokenRefreshResponse(token, requestRefreshToken, "Bearer");
                 }).orElseThrow(() -> {
                     throw new TokenRefreshException(requestRefreshToken, "Refresh token is not in database!");
@@ -90,5 +99,18 @@ public class AuthServiceImpl implements AuthService {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long userId = userDetails.getId();
         refreshTokenService.deleteByUserId(userId);
+    }
+
+    @Override
+    public String forgetPassword(String email) {
+        Optional<User> user = userRepository.findFirstByEmail(email);
+        if (!user.isPresent()) {
+            throw new RuntimeException("User not Available");
+        }
+        String password = generatePassword();
+        String subject = "[SAFEWAY] Forget Password";
+        String body = "Your New Password is " + password;
+        userRepository.updateUserPasswordById(passwordEncoder.encode(password), user.get().getId());
+        return emailService.sendSimpleMail(new EmailDetails(email, body, subject));
     }
 }

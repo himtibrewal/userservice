@@ -3,20 +3,14 @@ package com.safeway.userservice.sequrity;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.safeway.userservice.dto.UserDetailsDao;
-import com.safeway.userservice.entity.User;
 import com.safeway.userservice.entity.admin.Permission;
 import com.safeway.userservice.entity.admin.Role;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
