@@ -4,8 +4,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.web.bind.annotation.Mapping;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -17,19 +21,21 @@ public class Permission {
     private Long id;
 
     @JsonProperty("permission_name")
+    @NotBlank(message =  "permission Name is mandatory")
     private String permissionName;
 
     @JsonProperty("permission_code")
+    @NotBlank(message =  "permission Name is mandatory")
     private String permissionCode;
 
     @JsonProperty("description")
     private String description;
 
     @JsonProperty("created_by")
-    private Integer createdBy;
+    private Long createdBy;
 
     @JsonProperty("updated_by")
-    private Integer updatedBy;
+    private Long updatedBy;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created_on", insertable = false, updatable = false)
@@ -73,19 +79,19 @@ public class Permission {
         this.description = description;
     }
 
-    public Integer getCreatedBy() {
+    public Long getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(Integer createdBy) {
+    public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
     }
 
-    public Integer getUpdatedBy() {
+    public Long getUpdatedBy() {
         return updatedBy;
     }
 
-    public void setUpdatedBy(Integer updatedBy) {
+    public void setUpdatedBy(Long updatedBy) {
         this.updatedBy = updatedBy;
     }
 

@@ -21,13 +21,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findFirstByMobile(String mobile);
 
-
-    boolean existsByUsername(String username);
+    boolean existsByEmailOrMobile(String email, String mobile);
 
     @Modifying
     @Transactional
     @Query("update User u set u.password = :password where u.id = :id")
     void updateUserPasswordById(@Param("password") String password, @Param("id") Long id);
+
+
+//    @Modifying
+//    @Transactional
+//    @Query("select u from User u set u.password = :password where u.id = :id")
+//    void getUserDetails(@Param("password") String password, @Param("id") Long id);
 
     @Modifying
     @Transactional

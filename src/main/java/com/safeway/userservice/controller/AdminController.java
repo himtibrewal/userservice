@@ -1,13 +1,19 @@
 package com.safeway.userservice.controller;
 
 
+import com.safeway.userservice.dto.request.RoleRequest;
+import com.safeway.userservice.dto.response.Response;
 import com.safeway.userservice.entity.admin.*;
+import com.safeway.userservice.sequrity.UserDetailsImpl;
 import com.safeway.userservice.service.admin.*;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @RestController
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -152,31 +158,49 @@ public class AdminController {
 
     // Roles
 
-    @PostMapping("/roles")
+    @PostMapping("/role")
     @ResponseStatus(HttpStatus.CREATED)
-    public Role saveRoles(@RequestBody Role role) {
-        role.setCreatedBy(1);
-        role.setUpdatedBy(1);
-        return rolesService.saveRole(role);
+    public ResponseEntity<?> saveRole(@Valid @RequestBody RoleRequest roleRequest) {
+        Long userID = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
+        Set<Permission> permissionSet = new HashSet<>();
+        if (roleRequest.getPermissionId() == null || !roleRequest.getPermissionId().isEmpty()) {
+            permissionSet = permissionService.findAllByIdInOrderById(roleRequest.getPermissionId());
+        }
+        Role role = new Role(roleRequest.getRoleName(), roleRequest.getRoleCode(), roleRequest.getDescription(), permissionSet);
+        role.setCreatedBy(userID);
+        role.setUpdatedBy(userID);
+        role.setCreatedOn(LocalDateTime.now());
+        role.setUpdatedOn(LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.CREATED).body(new Response(rolesService.saveRole(role),
+                "SF-201",
+                "ROLES Created Successfully",
+                HttpStatus.CREATED.value()));
     }
 
-    @PutMapping("/roles/{id}")
+    @PutMapping("/role/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Role updateRoles(@PathVariable("id") Long id, @RequestBody Role role) {
-        role.setUpdatedBy(1);
-        return rolesService.updateRole(id, role);
+    public ResponseEntity<?> updateRoles(@PathVariable("id") Long id, @Valid @RequestBody RoleRequest roleRequest) {
+        Long userID = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
+        Set<Permission> permissionSet = new HashSet<>();
+        if (roleRequest.getPermissionId() == null || !roleRequest.getPermissionId().isEmpty()) {
+            permissionSet = permissionService.findAllByIdInOrderById(roleRequest.getPermissionId());
+        }
+        Role role = new Role(roleRequest.getRoleName(), roleRequest.getRoleCode(), roleRequest.getDescription(), permissionSet);
+        role.setUpdatedBy(userID);
+        role.setUpdatedOn(LocalDateTime.now());
+        return ResponseEntity.ok(new Response<Role>(rolesService.updateRole(id, role), "roles Updated Successfully"));
     }
 
     @GetMapping("/roles")
     @ResponseStatus(HttpStatus.OK)
-    public List<Role> getAllRoles() {
-        return rolesService.getAllRole();
+    public ResponseEntity<?> getAllRoles() {
+        return ResponseEntity.ok(new Response<List<Role>>(rolesService.getAllRole(), "roles Found Successfully"));
     }
 
-    @GetMapping("/roles/{id}")
+    @GetMapping("/role/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Optional<Role> getRolesById(@PathVariable Long id) {
-        return rolesService.getRoleById(id);
+    public ResponseEntity<?> getRolesById(@PathVariable Long id) {
+        return ResponseEntity.ok(new Response<Role>(rolesService.getRoleById(id), "roles Found Successfully"));
     }
 
     @DeleteMapping("/roles/{id}")
@@ -188,29 +212,37 @@ public class AdminController {
     // Permission
     @PostMapping("/permission")
     @ResponseStatus(HttpStatus.CREATED)
-    public Permission savePermission(@RequestBody Permission permission) {
-        permission.setCreatedBy(1);
-        permission.setUpdatedBy(1);
-        return permissionService.savePermission(permission);
+    public ResponseEntity<?> savePermission(@Valid @RequestBody Permission permission) {
+        Long userID = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
+        permission.setCreatedBy(userID);
+        permission.setUpdatedBy(userID);
+        permission.setCreatedOn(LocalDateTime.now());
+        permission.setUpdatedOn(LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.CREATED).body(new Response(permissionService.savePermission(permission),
+                "SF-201",
+                "Permission Created Successfully",
+                HttpStatus.CREATED.value()));
     }
 
     @PutMapping("/permission/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Permission updatePermission(@PathVariable("id") Long id, @RequestBody Permission permission) {
-        permission.setUpdatedBy(1);
-        return permissionService.updatePermission(id, permission);
+    public ResponseEntity<?> updatePermission(@PathVariable("id") Long id, @RequestBody Permission permission) {
+        Long userID = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
+        permission.setUpdatedBy(userID);
+        permission.setUpdatedOn(LocalDateTime.now());
+        return ResponseEntity.ok(new Response<Permission>(permissionService.updatePermission(id, permission), "Permission Updated Successfully"));
     }
 
     @GetMapping("/permission")
     @ResponseStatus(HttpStatus.OK)
-    public List<Permission> getAllPermission() {
-        return permissionService.getAllPermission();
+    public ResponseEntity<?> getAllPermission() {
+        return ResponseEntity.ok(new Response<List<Permission>>(permissionService.getAllPermission(), "Permission Found Successfully"));
     }
 
     @GetMapping("/permission/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Optional<Permission> getPermissionById(@PathVariable Long id) {
-        return permissionService.getPermissionById(id);
+    public ResponseEntity<?> getPermissionById(@PathVariable Long id) {
+        return ResponseEntity.ok(new Response<Permission>(permissionService.getPermissionById(id), "Permission Found Successfully"));
     }
 
     @DeleteMapping("/permission/{id}")

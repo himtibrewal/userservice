@@ -1,6 +1,7 @@
 package com.safeway.userservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.http.HttpStatus;
 
 public class Response<T> {
 
@@ -14,9 +15,16 @@ public class Response<T> {
     private String responseMessage;
 
     @JsonProperty("response_status")
-    private String responseStatus;
+    private Integer responseStatus;
 
-    public Response(T data, String responseCode, String responseMessage, String responseStatus) {
+    public Response(T data, String responseMessage) {
+        this.data = data;
+        this.responseCode = "SW-200";
+        this.responseMessage = responseMessage;
+        this.responseStatus = HttpStatus.OK.value();
+    }
+
+    public Response(T data, String responseCode, String responseMessage, Integer responseStatus) {
         this.data = data;
         this.responseCode = responseCode;
         this.responseMessage = responseMessage;
@@ -47,11 +55,11 @@ public class Response<T> {
         this.responseMessage = responseMessage;
     }
 
-    public String getResponseStatus() {
+    public Integer getResponseStatus() {
         return responseStatus;
     }
 
-    public void setResponseStatus(String responseStatus) {
+    public void setResponseStatus(Integer responseStatus) {
         this.responseStatus = responseStatus;
     }
 }

@@ -1,12 +1,16 @@
 package com.safeway.userservice.service.admin;
 
 import com.safeway.userservice.entity.admin.Permission;
+import com.safeway.userservice.entity.admin.Role;
+import com.safeway.userservice.exception.ErrorEnum;
+import com.safeway.userservice.exception.NotFoundException;
 import com.safeway.userservice.repository.admin.PermissionRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class PermissionServiceImpl implements PermissionService {
@@ -18,8 +22,24 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
-    public Optional<Permission> getPermissionById(Long id) {
-        return permissionRepository.findById(id);
+    public Permission getPermissionById(Long id) {
+        Optional<Permission> permission = permissionRepository.findById(id);
+        if (!permission.isPresent()) {
+            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "roles");
+        }
+        return permission.get();
+    }
+
+    @Override
+    public Set<Permission> findAllByIdInOrderById(List<Long> ids) {
+        Set<Permission> permissionList = permissionRepository.findAllByIdInOrderById(ids);
+        return permissionList;
+    }
+
+    @Override
+    public List<Permission> findAllByPermissionCodeInOrderById(List<String> permissionCode) {
+        List<Permission> permissionList = permissionRepository.findAllByPermissionCodeInOrderById(permissionCode);
+        return permissionList;
     }
 
     @Override

@@ -65,10 +65,8 @@ public class UserController {
         vehicle.setUpdatedBy(userID);
         Vehicle v =  vehicleService.saveVehicle(vehicle);
         VehicleResponse vehicleResponse = new VehicleResponse(v.getType(), v.getBrand(), v.getModel(), v.getRegistrationNo());
-        return ResponseEntity.status(HttpStatus.CREATED).body(new Response(vehicleResponse,
-                "SF-201",
-                "Vehicle Added Successfully",
-                HttpStatus.CREATED.toString()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new Response(vehicleResponse, "SF-201",
+                "Vehicle Added Successfully", HttpStatus.CREATED.value()));
     }
 
 }

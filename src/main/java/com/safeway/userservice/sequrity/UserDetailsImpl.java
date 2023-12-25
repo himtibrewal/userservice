@@ -3,6 +3,7 @@ package com.safeway.userservice.sequrity;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import com.safeway.userservice.dto.UserDetailsDao;
 import com.safeway.userservice.entity.admin.Permission;
@@ -23,16 +24,16 @@ public class UserDetailsImpl implements UserDetails {
 
     private String mobile;
 
-    private List<Role> roles;
+    private Set<Role> roles;
 
-    private List<Permission> permissions;
+    private Set<Permission> permissions;
     @JsonIgnore
     private String password;
 
     private Collection<? extends GrantedAuthority> authorities;
 
     public UserDetailsImpl(Long id, String username, String email, String mobile, String password,
-                           List<Role> roles, List<Permission> permissions, Collection<? extends GrantedAuthority> authorities) {
+                           Set<Role> roles, Set<Permission> permissions, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -93,6 +94,14 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public Set<Permission> getPermissions() {
+        return permissions;
     }
 
     @Override

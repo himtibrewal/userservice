@@ -4,14 +4,23 @@ server:
 
 spring:
   jpa:
-    #    hibernate:
-    #    ddl-auto: update
     show-sql: true
+    generate-ddl: true
   datasource:
     url: jdbc:mysql://localhost:3306/safeway
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
+#    properties:
+#      javax:
+#        persistence:
+#          schema-generation:
+#            scripts:
+#              action: creat
+#              create-target: create.sql
+#              create-source: metadata
+
+
 
   mail:
     host: smtp.gmail.com

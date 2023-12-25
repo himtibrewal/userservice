@@ -1,10 +1,15 @@
 package com.safeway.userservice.dto.request;
 
-public class SignupRequest {
-    private String username;
-    private String email;
-    private String password;
+import jakarta.validation.constraints.NotBlank;
 
+public class SignupRequest {
+    @NotBlank(message = "UserName is mandatory")
+    private String username;
+    @NotBlank(message = "Email is mandatory")
+    private String email;
+    @NotBlank(message = "Password is mandatory")
+    private String password;
+    @NotBlank(message = "Mobile is mandatory")
     private String mobile;
 
     public String getUsername() {

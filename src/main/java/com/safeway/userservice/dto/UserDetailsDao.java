@@ -4,6 +4,7 @@ import com.safeway.userservice.entity.admin.Permission;
 import com.safeway.userservice.entity.admin.Role;
 
 import java.util.List;
+import java.util.Set;
 
 public class UserDetailsDao {
     private Long id;
@@ -15,8 +16,8 @@ public class UserDetailsDao {
     private String emergency_contact1;
     private String emergency_contact2;
     private String bloodGroup;
-    private List<Role> roles;
-    private List<Permission> permissions;
+    private Set<Role> roles;
+    private Set<Permission> permissions;
 
 
 
@@ -92,19 +93,19 @@ public class UserDetailsDao {
         this.bloodGroup = bloodGroup;
     }
 
-    public List<Role> getRoles() {
+    public Set<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<Role> roles) {
+    public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
 
-    public List<Permission> getPermissions() {
+    public Set<Permission> getPermissions() {
         return permissions;
     }
 
-    public void setPermissions(List<Permission> permissions) {
+    public void setPermissions(Set<Permission> permissions) {
         this.permissions = permissions;
     }
 }

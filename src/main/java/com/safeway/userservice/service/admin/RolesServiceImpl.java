@@ -1,6 +1,8 @@
 package com.safeway.userservice.service.admin;
 
 import com.safeway.userservice.entity.admin.Role;
+import com.safeway.userservice.exception.ErrorEnum;
+import com.safeway.userservice.exception.NotFoundException;
 import com.safeway.userservice.repository.admin.RolesRepository;
 import org.springframework.stereotype.Service;
 
@@ -18,23 +20,36 @@ public class RolesServiceImpl implements RolesService {
     }
 
     @Override
-    public Optional<Role> getRoleById(Long id) {
-        return rolesRepository.findById(id);
+    public Role getRoleById(Long id) {
+        Optional<Role> role = rolesRepository.findById(id);
+        if (!role.isPresent()) {
+            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "roles");
+        }
+        return role.get();
+
     }
 
     @Override
     public List<Role> getAllRole() {
-        return rolesRepository.findAll();
+        List<Role> roleList = rolesRepository.findAll();
+        if (roleList.isEmpty()) {
+            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "roles");
+        }
+        return roleList;
     }
 
     @Override
     public Role updateRole(Long id, Role r) {
-        Role updateRole = rolesRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Role not exist with id: " + id));
+        Optional<Role> role = rolesRepository.findById(id);
+        if (!role.isPresent()) {
+            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "Roles");
+        }
+        Role updateRole = role.get();
         updateRole.setRoleName(r.getRoleName());
         updateRole.setRoleCode(r.getRoleCode());
         updateRole.setDescription(r.getDescription());
         updateRole.setUpdatedOn(LocalDateTime.now());
+        updateRole.setPermissions(r.getPermissions());
         return rolesRepository.save(updateRole);
     }
 

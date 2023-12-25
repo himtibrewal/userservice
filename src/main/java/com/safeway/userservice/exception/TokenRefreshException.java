@@ -1,14 +1,12 @@
 package com.safeway.userservice.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+public class TokenRefreshException extends BaseException {
 
-@ResponseStatus(HttpStatus.FORBIDDEN)
-public class TokenRefreshException extends RuntimeException {
+    public TokenRefreshException(ErrorEnum errorCode) {
+        super(errorCode);
+    }
 
-    private static final long serialVersionUID = 1L;
-
-    public TokenRefreshException(String token, String message) {
-        super(String.format("Failed for [%s]: %s", token, message));
+    public TokenRefreshException(ErrorEnum errorCode, Exception originalException) {
+        super(errorCode, originalException);
     }
 }

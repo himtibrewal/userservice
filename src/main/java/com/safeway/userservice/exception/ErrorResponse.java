@@ -14,9 +14,9 @@ public class ErrorResponse<T> {
     private String responseMessage;
 
     @JsonProperty("response_status")
-    private String responseStatus;
+    private Integer responseStatus;
 
-    public ErrorResponse(T data, String responseCode, String responseMessage, String responseStatus) {
+    public ErrorResponse(T data, String responseCode, String responseMessage, Integer responseStatus) {
         this.data = data;
         this.responseCode = responseCode;
         this.responseMessage = responseMessage;
@@ -47,11 +47,11 @@ public class ErrorResponse<T> {
         this.responseMessage = responseMessage;
     }
 
-    public String getResponseStatus() {
+    public Integer getResponseStatus() {
         return responseStatus;
     }
 
-    public void setResponseStatus(String responseStatus) {
+    public void setResponseStatus(Integer responseStatus) {
         this.responseStatus = responseStatus;
     }
 

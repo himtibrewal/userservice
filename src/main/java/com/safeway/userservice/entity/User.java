@@ -3,9 +3,12 @@ package com.safeway.userservice.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.safeway.userservice.entity.admin.Role;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -17,11 +20,12 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "`username`", nullable = false, unique = true)
     private String username;
 
+    @Column(name = "`email`", nullable = false, unique = true)
     private String email;
 
+    @Column(name = "`mobile`", nullable = false, unique = true)
     private String mobile;
 
     @Column(name = "`password`", nullable = false)
@@ -35,20 +39,29 @@ public class User {
 
     private String bloodGroup;
 
+    @ManyToMany
+    @JoinTable(name = "user_role_mapping",
+            joinColumns =
+            @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns =
+            @JoinColumn(name = "role_id", referencedColumnName = "id")
+    )
+    private Set<Role> roles;
+
     @JsonProperty("created_by")
-    private Integer createdBy;
+    private Long createdBy = id;
 
     @JsonProperty("updated_by")
-    private Integer updatedBy;
+    private Long updatedBy = id;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "created_on", insertable = false, updatable = false)
+    @Column(name = "created_on", insertable = true, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdOn ;
+    private LocalDateTime createdOn;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_on", insertable = false)
+    @Column(name = "updated_on", insertable = true, updatable = true)
     private LocalDateTime updatedOn;
 
 
@@ -134,19 +147,27 @@ public class User {
         this.bloodGroup = bloodGroup;
     }
 
-    public Integer getCreatedBy() {
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+    public Long getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(Integer createdBy) {
+    public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
     }
 
-    public Integer getUpdatedBy() {
+    public Long getUpdatedBy() {
         return updatedBy;
     }
 
-    public void setUpdatedBy(Integer updatedBy) {
+    public void setUpdatedBy(Long updatedBy) {
         this.updatedBy = updatedBy;
     }
 

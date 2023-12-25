@@ -3,9 +3,12 @@ package com.safeway.userservice.entity.admin;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.safeway.userservice.entity.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 
 @Entity
@@ -18,35 +21,57 @@ public class Role {
     private Long id;
 
     @JsonProperty("role_name")
+    @NotBlank(message = "Role Name is mandatory")
     private String roleName;
 
     @JsonProperty("role_code")
+    @NotBlank(message = "Role code is mandatory")
     private String roleCode;
 
     @JsonProperty("description")
     private String description;
 
+    @ManyToMany
+    @JoinTable(name = "role_permission_mapping",
+            joinColumns =
+            @JoinColumn(name = "role_id", referencedColumnName = "id"),
+            inverseJoinColumns =
+            @JoinColumn(name = "permission_id", referencedColumnName = "id")
+    )
+    private Set<Permission> permissions;
+
     @JsonProperty("created_by")
-    private Integer createdBy;
+    private Long createdBy;
 
     @JsonProperty("updated_by")
-    private Integer updatedBy;
+    private Long updatedBy;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "created_on", insertable = false, updatable = false)
+    @Column(name = "created_on", insertable = true, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createdOn;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_on", insertable = false)
+    @Column(name = "updated_on", insertable = true)
     private LocalDateTime updatedOn;
 
     public Role() {
     }
 
-    public Role(Long id) {
-        this.id = id;
+    public Role(String roleName, String roleCode, String description, Set<Permission> permissions) {
+        this.roleName = roleName;
+        this.roleCode = roleCode;
+        this.description = description;
+        this.permissions = permissions;
+    }
+
+    public Set<Permission> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(Set<Permission> permissions) {
+        this.permissions = permissions;
     }
 
     public Long getId() {
@@ -82,19 +107,19 @@ public class Role {
         this.description = description;
     }
 
-    public Integer getCreatedBy() {
+    public Long getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(Integer createdBy) {
+    public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
     }
 
-    public Integer getUpdatedBy() {
+    public Long getUpdatedBy() {
         return updatedBy;
     }
 
-    public void setUpdatedBy(Integer updatedBy) {
+    public void setUpdatedBy(Long updatedBy) {
         this.updatedBy = updatedBy;
     }
 

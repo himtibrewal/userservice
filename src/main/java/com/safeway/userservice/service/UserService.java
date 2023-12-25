@@ -2,13 +2,20 @@ package com.safeway.userservice.service;
 
 import com.safeway.userservice.dto.UserDetailsDao;
 import com.safeway.userservice.entity.User;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
     Optional<User> getUserById(Long id);
+
+    boolean existsByEmailOrMobile(String email, String mobile);
+
+    User saveUser(User user);
+
+    void updateUserPasswordById(String password, Long id);
+
+    //UserRoles saveUserRoles(UserRoles userRoles);
 
     Optional<User> findUserByEmail(String email);
 
@@ -18,7 +25,7 @@ public interface UserService {
 
     User updateUser(Long id, User user);
 
-    User saveUser(User user);
+
 
     void deleteUser(Long id);
 
