@@ -64,14 +64,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public SignInResponse loginUser(SignInRequest signInRequest) {
-
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String jwt = jwtUtils.generateJwtToken(userDetails);
-        List<String> roles = userDetails.getRoles() != null ? userDetails.getRoles().stream().map(Role::getRoleCode).collect(Collectors.toList()) : new ArrayList<>();
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId(), jwt);
 
-        return new SignInResponse(userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), userDetails.getMobile(), jwt, refreshToken.getRefToken(), "Bearer", roles);
+        return new SignInResponse(userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(),
+                userDetails.getMobile(), jwt, refreshToken.getRefToken(), "Bearer", userDetails.getRoles(),
+                userDetails.getPermissions());
 
     }
 

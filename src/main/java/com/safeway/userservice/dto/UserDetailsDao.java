@@ -16,8 +16,8 @@ public class UserDetailsDao {
     private String emergency_contact1;
     private String emergency_contact2;
     private String bloodGroup;
-    private Set<Role> roles;
-    private Set<Permission> permissions;
+    private Set<String> roles;
+    private Set<String> permissions;
 
 
 
@@ -93,19 +93,19 @@ public class UserDetailsDao {
         this.bloodGroup = bloodGroup;
     }
 
-    public Set<Role> getRoles() {
+    public Set<String> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<Role> roles) {
+    public void setRoles(Set<String> roles) {
         this.roles = roles;
     }
 
-    public Set<Permission> getPermissions() {
+    public Set<String> getPermissions() {
         return permissions;
     }
 
-    public void setPermissions(Set<Permission> permissions) {
+    public void setPermissions(Set<String> permissions) {
         this.permissions = permissions;
     }
 }

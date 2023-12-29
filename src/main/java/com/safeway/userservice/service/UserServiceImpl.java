@@ -2,12 +2,13 @@ package com.safeway.userservice.service;
 
 import com.safeway.userservice.dto.UserDetailsDao;
 import com.safeway.userservice.entity.User;
+import com.safeway.userservice.entity.admin.Permission;
 import com.safeway.userservice.entity.admin.Role;
 import com.safeway.userservice.repository.UserRepository;
-import com.safeway.userservice.repository.admin.RolesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -18,7 +19,7 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository ) {
+    public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -53,16 +54,7 @@ public class UserServiceImpl implements UserService {
     public Optional<UserDetailsDao> getUserDetails(String username) {
         Optional<User> user = findUserByEmail(username);
         if (user.isPresent()) {
-            User user1 = user.get();
-            UserDetailsDao userDetailsDao = new UserDetailsDao();
-            userDetailsDao.setId(user1.getId());
-            userDetailsDao.setUsername(user1.getUsername());
-            userDetailsDao.setEmail(user1.getEmail());
-            userDetailsDao.setMobile(user1.getMobile());
-            userDetailsDao.setPassword(user1.getPassword());
-            userDetailsDao.setRoles(user1.getRoles());
-            userDetailsDao.setPermissions(Set.of());
-            return Optional.of(userDetailsDao);
+            return Optional.of(computeUserDetails(user.get()));
         }
         return Optional.empty();
     }
@@ -72,24 +64,37 @@ public class UserServiceImpl implements UserService {
     public Optional<UserDetailsDao> getUserDetailsById(Long id) {
         Optional<User> user = getUserById(id);
         if (user.isPresent()) {
-            User user1 = user.get();
-            UserDetailsDao userDetailsDao = new UserDetailsDao();
-            userDetailsDao.setId(user1.getId());
-            userDetailsDao.setUsername(user1.getUsername());
-            userDetailsDao.setEmail(user1.getEmail());
-            userDetailsDao.setMobile(user1.getMobile());
-            userDetailsDao.setPassword(user1.getPassword());
-//            List<UserRoles> roleList = useRolesRepository.findAllByUserId(user.get().getId());
-//            userDetailsDao.setRoles(roleList.stream().map(r -> new Role(r.getRoleId().getId())).collect(Collectors.toList()));
-            userDetailsDao.setPermissions(Set.of());
-            return Optional.of(userDetailsDao);
+            return Optional.of(computeUserDetails(user.get()));
         }
         return Optional.empty();
     }
 
+    private UserDetailsDao computeUserDetails(User user) {
+        Set<String> permissionSet = user.getRoles().stream()
+                .map(role -> role.getPermissions().stream()
+                        .map(Permission::getPermissionCode).collect(Collectors.toSet()))
+                .reduce(new HashSet<>(), (a, b) -> {
+                    a.addAll(b);
+                    return a;
+                });
+
+        Set<String> rolesSet = user.getRoles().stream().map(Role::getRoleCode).collect(Collectors.toSet());
+
+
+        UserDetailsDao userDetailsDao = new UserDetailsDao();
+        userDetailsDao.setId(user.getId());
+        userDetailsDao.setUsername(user.getUsername());
+        userDetailsDao.setEmail(user.getEmail());
+        userDetailsDao.setMobile(user.getMobile());
+        userDetailsDao.setPassword(user.getPassword());
+        userDetailsDao.setRoles(rolesSet);
+        userDetailsDao.setPermissions(permissionSet);
+        return userDetailsDao;
+    }
+
     @Override
     public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
+        return userRepository.findTopById(id);
     }
 
     @Override

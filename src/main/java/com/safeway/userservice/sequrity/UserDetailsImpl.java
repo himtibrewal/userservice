@@ -24,16 +24,16 @@ public class UserDetailsImpl implements UserDetails {
 
     private String mobile;
 
-    private Set<Role> roles;
+    private Set<String> roles;
 
-    private Set<Permission> permissions;
+    private Set<String> permissions;
     @JsonIgnore
     private String password;
 
     private Collection<? extends GrantedAuthority> authorities;
 
     public UserDetailsImpl(Long id, String username, String email, String mobile, String password,
-                           Set<Role> roles, Set<Permission> permissions, Collection<? extends GrantedAuthority> authorities) {
+                           Set<String> roles, Set<String> permissions, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -96,11 +96,11 @@ public class UserDetailsImpl implements UserDetails {
         return true;
     }
 
-    public Set<Role> getRoles() {
+    public Set<String> getRoles() {
         return roles;
     }
 
-    public Set<Permission> getPermissions() {
+    public Set<String> getPermissions() {
         return permissions;
     }
 

@@ -34,7 +34,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         throw new UsernameNotFoundException(username);
     }
 
-    public UserDetailsImpl loadUserByUserId(String userId) throws UsernameNotFoundException {
+    @Transactional
+    public UserDetails loadUserByUserId(String userId) throws UsernameNotFoundException {
         Optional<UserDetailsDao> userDetails = userService.getUserDetailsById(Long.parseLong(userId));
         if (userDetails.isPresent()) {
             return UserDetailsImpl.build(userDetails.get());

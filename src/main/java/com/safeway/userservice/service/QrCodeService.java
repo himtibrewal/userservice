@@ -1,21 +1,24 @@
 package com.safeway.userservice.service;
 
-import com.safeway.userservice.entity.QrCode;
+import com.safeway.userservice.entity.QrCodeEntity;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 public interface QrCodeService {
-    Optional<QrCode> getQrCodeById(Long id);
+    QrCodeEntity createQrCode();
 
-    Optional<QrCode> getQrCodeByUserId(Long userId);
+    QrCodeEntity getQrCodeByKey(String key);
 
-    QrCode updateQrCode(Long id, QrCode qrCode);
+    QrCodeEntity reCreateQrCode(String key);
 
-    QrCode saveQrCode(QrCode qrCode);
+    QrCodeEntity qrCodeLinkToUser(String key, Long userId);
 
-    List<QrCode> generateQrCode(Integer count);
+    QrCodeEntity getQrCodeById(Long id);
+
+
+    Optional<QrCodeEntity> getQrCodeByUserId(Long userId);
+
+    QrCodeEntity updateQrCode(Long id, QrCodeEntity qrCodeEntity);
 
     void deleteQrCode(Long id);
 }

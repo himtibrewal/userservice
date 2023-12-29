@@ -1,6 +1,9 @@
 package com.safeway.userservice.utils;
 
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import java.util.Random;
+import java.util.UUID;
 
 public class Commons {
 
@@ -18,5 +21,13 @@ public class Commons {
                 .toString();
         System.out.println(generatedString);
         return generatedString;
+    }
+
+    public static String getBaseUrl() {
+        return ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+    }
+
+    public static String getUniqueString() {
+        return UUID.randomUUID().toString();
     }
 }

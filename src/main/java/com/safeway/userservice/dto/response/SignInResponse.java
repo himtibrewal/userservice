@@ -3,6 +3,7 @@ package com.safeway.userservice.dto.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
+import java.util.Set;
 
 public class SignInResponse {
 
@@ -24,10 +25,12 @@ public class SignInResponse {
     @JsonProperty("token_type")
     private String tokenType;
 
-    private List<String> roles;
+    private Set<String> roles;
+
+    private Set<String> permissions;
 
     public SignInResponse(Long id, String username, String email, String mobile, String accessToken,
-                          String refreshToken, String tokenType, List<String> roles) {
+                          String refreshToken, String tokenType, Set<String> roles, Set<String> permissions) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -36,6 +39,7 @@ public class SignInResponse {
         this.refreshToken = refreshToken;
         this.tokenType = tokenType;
         this.roles = roles;
+        this.permissions = permissions;
     }
 
     public Long getId() {
@@ -94,11 +98,19 @@ public class SignInResponse {
         this.tokenType = tokenType;
     }
 
-    public List<String> getRoles() {
+    public Set<String> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<String> roles) {
+    public void setRoles(Set<String> roles) {
         this.roles = roles;
+    }
+
+    public Set<String> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(Set<String> permissions) {
+        this.permissions = permissions;
     }
 }

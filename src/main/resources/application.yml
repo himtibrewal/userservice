@@ -6,33 +6,33 @@ spring:
   jpa:
     show-sql: true
     generate-ddl: true
+    open-in-view: true
   datasource:
     url: jdbc:mysql://localhost:3306/safeway
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+
+#  mail:
+#    host: smtp.gmail.com
+#    port: 587
+#    username: "himanshugkv11@gmail.com"
+#    password: "rxwavpkmlrayvtej"
 #    properties:
-#      javax:
-#        persistence:
-#          schema-generation:
-#            scripts:
-#              action: creat
-#              create-target: create.sql
-#              create-source: metadata
+#      mail:
+#        smtp:
+#          auth: true
+#          starttls:
+#            enable: true
 
 
-
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: "himanshugkv11@gmail.com"
-    password: "rxwavpkmlrayvtej"
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+#amazonProperties:
+##  endpointUrl: https://s3.us-east-1.amazonaws.com
+#  region: us-east-1
+#  accessKey: AKIA3KVT3VCWHD3GHSKN
+#  secretKey: 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
+#  bucketName: prod-safeway
 
 
 # App Properties

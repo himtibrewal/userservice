@@ -1,3 +1,6 @@
+git config --global user.name "Himanshu"
+git config --global user.email himanshugkv11@gmail.com
+
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
