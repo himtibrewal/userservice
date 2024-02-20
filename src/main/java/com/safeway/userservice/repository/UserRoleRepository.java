@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Set;
 
-public interface UseRoleRepository extends JpaRepository<UserRole, Long> {
+public interface UserRoleRepository extends JpaRepository<UserRole, Long> {
 
     @Query("select ur from UserRole ur where ur.user.id IN (?1)")
     List<UserRole> findAllByUserIsIn(Set<Long> userIds);

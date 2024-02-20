@@ -1,20 +1,18 @@
 package com.safeway.userservice.service.admin;
 
 import com.safeway.userservice.entity.admin.District;
+import com.safeway.userservice.entity.admin.State;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface DistrictService {
-    Optional<District> getDistrictById(Long id);
-
-    List<District> getDistrictByStateId(Long stateId);
-
+    District getDistrictById(Long id);
     List<District> getAllDistrict();
-
-    District updateDistrict(Long id, District district);
-
-    District saveDistrict(District district);
-
+    List<District> getDistrictByStateId(Long stateId);
+    Page<District> getAllDistrictPaginated(Long stateId, Pageable pageable);
+    District saveDistrict(District state);
     void deleteDistrict(Long id);
 }

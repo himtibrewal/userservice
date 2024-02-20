@@ -5,9 +5,22 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import lombok.*;
+
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Getter
+@Setter
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Table(name = "country")
 public class Country {
@@ -17,95 +30,39 @@ public class Country {
     private Long id;
 
     @JsonProperty("country_name")
+    @NotNull(message = "Name is mandatory")
     private String countryName;
 
     @JsonProperty("country_code")
+    @NotNull(message = "Code is mandatory")
+    @Positive(message = "Only Positive Number Allowed")
     private Integer countryCode;
 
     @JsonProperty("country_abbr")
+    @NotNull(message = "Abbr is mandatory")
     private String countryAbbr;
 
+    @JsonProperty("status")
+    private Integer status = 1;
+
+    @JsonIgnore
     @JsonProperty("created_by")
-    private Integer createdBy;
+    private Long createdBy;
 
+    @JsonIgnore
     @JsonProperty("updated_by")
-    private Integer updatedBy;
+    private Long updatedBy;
 
+    @JsonIgnore
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "created_on", insertable = false, updatable = false)
+    @Column(name = "created_on", insertable = true, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createdOn ;
 
+    @JsonIgnore
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_on", insertable = false)
+    @Column(name = "updated_on", insertable = true, updatable = true)
     private LocalDateTime updatedOn;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getCountryName() {
-        return countryName;
-    }
-
-    public void setCountryName(String countryName) {
-        this.countryName = countryName;
-    }
-
-    public Integer getCountryCode() {
-        return countryCode;
-    }
-
-    public void setCountryCode(Integer countryCode) {
-        this.countryCode = countryCode;
-    }
-
-    public String getCountryAbbr() {
-        return countryAbbr;
-    }
-
-    public void setCountryAbbr(String countryAbbr) {
-        this.countryAbbr = countryAbbr;
-    }
-
-    @JsonIgnore
-    public Integer getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Integer createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    @JsonIgnore
-    public Integer getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(Integer updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    @JsonIgnore
-    public LocalDateTime getCreatedOn() {
-        return createdOn;
-    }
-
-    public void setCreatedOn(LocalDateTime createdOn) {
-        this.createdOn = createdOn;
-    }
-
-    @JsonIgnore
-    public LocalDateTime getUpdatedOn() {
-        return updatedOn;
-    }
-
-    public void setUpdatedOn(LocalDateTime updatedOn) {
-        this.updatedOn = updatedOn;
-    }
 }

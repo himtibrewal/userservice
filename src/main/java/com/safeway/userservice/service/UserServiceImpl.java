@@ -1,14 +1,18 @@
 package com.safeway.userservice.service;
 
 import com.safeway.userservice.dto.UserDetailsDao;
-import com.safeway.userservice.entity.User;
-import com.safeway.userservice.entity.admin.Permission;
-import com.safeway.userservice.entity.admin.Role;
+import com.safeway.userservice.entity.*;
+import com.safeway.userservice.exception.ErrorEnum;
+import com.safeway.userservice.exception.NotFoundException;
+import com.safeway.userservice.repository.UserRoleRepository;
 import com.safeway.userservice.repository.UserRepository;
+import com.safeway.userservice.service.admin.PermissionService;
+import com.safeway.userservice.service.admin.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -16,16 +20,20 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    private final UserRoleRepository userRoleRepository;
+
+    private final RoleService roleService;
+
+    private final PermissionService permissionService;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, UserRoleRepository userRoleRepository, RoleService roleService, PermissionService permissionService) {
         this.userRepository = userRepository;
-    }
-
-    @Override
-    public boolean existsByEmailOrMobile(String email, String mobile) {
-        return userRepository.existsByEmailOrMobile(email, mobile);
+        this.userRoleRepository = userRoleRepository;
+        this.roleService = roleService;
+        this.permissionService = permissionService;
     }
 
     @Override
@@ -33,68 +41,9 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-
     @Override
-    public Optional<User> findUserByEmail(String email) {
-        return userRepository.findFirstByEmail(email);
-    }
-
-    @Override
-    public Optional<User> findUserByMobile(String mobile) {
-        return userRepository.findFirstByMobile(mobile);
-    }
-
-
-    public void updateUserPasswordById(String password, Long id) {
-        userRepository.updateUserPasswordById(password, id);
-    }
-
-    // Get By Email
-    @Override
-    public Optional<UserDetailsDao> getUserDetails(String username) {
-        Optional<User> user = findUserByEmail(username);
-        if (user.isPresent()) {
-            return Optional.of(computeUserDetails(user.get()));
-        }
-        return Optional.empty();
-    }
-
-
-    @Override
-    public Optional<UserDetailsDao> getUserDetailsById(Long id) {
-        Optional<User> user = getUserById(id);
-        if (user.isPresent()) {
-            return Optional.of(computeUserDetails(user.get()));
-        }
-        return Optional.empty();
-    }
-
-    private UserDetailsDao computeUserDetails(User user) {
-        Set<String> permissionSet = user.getRoles().stream()
-                .map(role -> role.getPermissions().stream()
-                        .map(Permission::getPermissionCode).collect(Collectors.toSet()))
-                .reduce(new HashSet<>(), (a, b) -> {
-                    a.addAll(b);
-                    return a;
-                });
-
-        Set<String> rolesSet = user.getRoles().stream().map(Role::getRoleCode).collect(Collectors.toSet());
-
-
-        UserDetailsDao userDetailsDao = new UserDetailsDao();
-        userDetailsDao.setId(user.getId());
-        userDetailsDao.setUsername(user.getUsername());
-        userDetailsDao.setEmail(user.getEmail());
-        userDetailsDao.setMobile(user.getMobile());
-        userDetailsDao.setPassword(user.getPassword());
-        userDetailsDao.setRoles(rolesSet);
-        userDetailsDao.setPermissions(permissionSet);
-        return userDetailsDao;
-    }
-
-    @Override
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findTopById(id);
+    public List<UserRole> saveUserRole(List<UserRole> userRoles) {
+        return userRoleRepository.saveAll(userRoles);
     }
 
     @Override
@@ -103,14 +52,103 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(Long id, User user) {
-        userRepository.updateUserById(user.getMobile(), id);
-        return null;
+    public Page<User> getAllUser(Pageable pageable) {
+        return userRepository.findAll(pageable);
+    }
+
+    @Override
+    public User getUserById(Long id) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty()) {
+            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "user");
+        }
+        return user.get();
+    }
+
+    @Override
+    public Set<Long> getAllUserIdByRoleId(Long roleId) {
+        return userRoleRepository.findAllUserIdByRoleId(roleId);
+    }
+
+    @Override
+    public List<User> getAllUserByRoleId(Long roleId) {
+        return userRoleRepository.findAllUserByRoleId(roleId);
+    }
+
+    @Override
+    public void deleteUserRoles(Long userId, Set<Long> roleIds) {
+        userRoleRepository.deleteByUserIdAndRoleIds(userId, roleIds);
     }
 
 
     @Override
+    public User updateUser(Long id, User user) {
+        User updateUser = getUserById(id);
+        updateUser.setUsername(user.getUsername());
+        updateUser.setEmail(user.getEmail());
+        updateUser.setMobile(user.getMobile());
+        updateUser.setPassword(user.getPassword());
+        updateUser.setCountryCode(user.getCountryCode());
+        updateUser.setBloodGroup(user.getBloodGroup());
+        updateUser.setEmergencyContact1(user.getEmergencyContact1());
+        updateUser.setEmergencyContact2(user.getEmergencyContact2());
+        updateUser.setStatus(user.getStatus());
+        updateUser.setCountryId(user.getCountryId());
+        updateUser.setStateId(user.getStateId());
+        updateUser.setCityId(user.getCityId());
+        updateUser.setUpdatedBy(user.getUpdatedBy());
+        updateUser.setUpdatedOn(user.getUpdatedOn());
+        return userRepository.save(updateUser);
+    }
+
+    @Override
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public User findUserByEmail(String email) {
+        Optional<User> user = userRepository.findFirstByEmail(email);
+        if (user.isEmpty()) {
+            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "user");
+        }
+        return user.get();
+    }
+
+    @Override
+    public User findUserByMobile(String mobile) {
+        Optional<User> user = userRepository.findFirstByMobile(mobile);
+        if (user.isEmpty()) {
+            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "user");
+        }
+        return user.get();
+    }
+
+    //for Auth And JWT Token
+    @Override
+    public UserDetailsDao getUserDetails(String email) {
+        return computeUserDetails(findUserByEmail(email));
+    }
+    @Override
+    public UserDetailsDao getUserDetailsById(Long id) {
+        return computeUserDetails(getUserById(id));
+    }
+
+    private UserDetailsDao computeUserDetails(User user) {
+        List<Role> roles = userRoleRepository.findAllRoleByUserId(user.getId());
+        Set<String> rolesSet = roles.stream().map(Role::getRoleCode).collect(Collectors.toSet());
+        Set<Long> roleIds = roles.stream().map(Role::getId).collect(Collectors.toSet());
+        List<Permission> permissions = permissionService.findAllPermissionByRoleIsIn(roleIds);
+        Set<String> permissionSet = permissions.stream().map(Permission::getPermissionCode).collect(Collectors.toSet());
+        return UserDetailsDao
+                .builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .mobile(user.getMobile())
+                .password(user.getPassword())
+                .roles(rolesSet)
+                .permissions(permissionSet)
+                .build();
     }
 }

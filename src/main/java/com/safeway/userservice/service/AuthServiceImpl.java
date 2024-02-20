@@ -8,14 +8,12 @@ import com.safeway.userservice.dto.response.SignInResponse;
 import com.safeway.userservice.dto.response.TokenRefreshResponse;
 import com.safeway.userservice.entity.RefreshToken;
 import com.safeway.userservice.entity.User;
-import com.safeway.userservice.entity.admin.Role;
 import com.safeway.userservice.exception.ErrorEnum;
-import com.safeway.userservice.exception.UserAlreadyExistException;
 import com.safeway.userservice.sequrity.JwtUtils;
 import com.safeway.userservice.exception.TokenRefreshException;
 import com.safeway.userservice.sequrity.UserDetailsImpl;
 import com.safeway.userservice.service.admin.EmailService;
-import com.safeway.userservice.service.admin.RolesService;
+import com.safeway.userservice.service.admin.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,15 +21,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import static com.safeway.userservice.exception.ErrorEnum.ERROR_USER_ALREADY_AVAILABLE;
+import static com.safeway.userservice.utils.Commons.TOKEN_TYPE;
 import static com.safeway.userservice.utils.Commons.generatePassword;
 
 @Service
@@ -39,7 +32,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserService userService;
 
-    private final RolesService rolesService;
+    private final RoleService roleService;
 
     private final AuthenticationManager authenticationManager;
 
@@ -52,9 +45,9 @@ public class AuthServiceImpl implements AuthService {
     private final EmailService emailService;
 
     @Autowired
-    public AuthServiceImpl(UserService userService, RolesService rolesService, AuthenticationManager authenticationManager, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, RefreshTokenService refreshTokenService, EmailService emailService) {
+    public AuthServiceImpl(UserService userService, RoleService roleService, AuthenticationManager authenticationManager, JwtUtils jwtUtils, PasswordEncoder passwordEncoder, RefreshTokenService refreshTokenService, EmailService emailService) {
         this.userService = userService;
-        this.rolesService = rolesService;
+        this.roleService = roleService;
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.passwordEncoder = passwordEncoder;
@@ -68,25 +61,26 @@ public class AuthServiceImpl implements AuthService {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String jwt = jwtUtils.generateJwtToken(userDetails);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId(), jwt);
-
         return new SignInResponse(userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(),
-                userDetails.getMobile(), jwt, refreshToken.getRefToken(), "Bearer", userDetails.getRoles(),
+                userDetails.getMobile(), jwt, refreshToken.getRefToken(), TOKEN_TYPE, userDetails.getRoles(),
                 userDetails.getPermissions());
 
     }
 
     @Override
     public User registerUser(SignupRequest signUpRequest) {
-        if (userService.existsByEmailOrMobile(signUpRequest.getEmail(), signUpRequest.getMobile())) {
-            throw new UserAlreadyExistException(ERROR_USER_ALREADY_AVAILABLE);
-        }
-        User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(), signUpRequest.getMobile(), passwordEncoder.encode(signUpRequest.getPassword()));
+//        if (userService.existsByEmailOrMobile(signUpRequest.getEmail(), signUpRequest.getMobile())) {
+//            throw new UserAlreadyExistException(ERROR_USER_ALREADY_AVAILABLE);
+//        }
+        User user = User.builder()
+                .username(signUpRequest.getUsername())
+                .email(signUpRequest.getEmail())
+                .mobile(signUpRequest.getMobile())
+                .password(passwordEncoder.encode(signUpRequest.getPassword()))
+                .countryCode("+91")
+                .build();
 
-        // add default country code
-        user.setCountryCode("+91");
-        user.setRoles(Set.of(rolesService.getRoleById(1L)));
-        User createdUser = userService.saveUser(user);
-        return createdUser;
+        return null; //userService.saveUser(user);
     }
 
     @Override
@@ -94,9 +88,9 @@ public class AuthServiceImpl implements AuthService {
         String requestRefreshToken = request.getRefreshToken();
         return refreshTokenService.findByRefreshToken(requestRefreshToken)
                 .map(refreshTokenService::verifyExpiration)
-                .map(rt -> userService.getUserById(rt.getUserId()).get())
+//                .map(rt -> userService.getUserById(rt.getUserId()))
                 .map(user -> {
-                    String token = jwtUtils.generateTokenFromUserId(String.valueOf(user.getId()));
+                    String token =  null; // jwtUtils.generateTokenFromUserId(String.valueOf(user.getId()));
                     return new TokenRefreshResponse(token, requestRefreshToken, "Bearer");
                 })
                 .orElseThrow(() -> {
@@ -114,14 +108,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String forgetPassword(String email) {
-        Optional<User> user = userService.findUserByEmail(email);
+        Optional<User> user =  null ;///userService.findUserByEmail(email);
         if (!user.isPresent()) {
             throw new RuntimeException("User not Available");
         }
         String password = generatePassword();
         String subject = "[SAFEWAY] Forget Password";
         String body = "Your New Password is " + password;
-        userService.updateUserPasswordById(passwordEncoder.encode(password), user.get().getId());
+       // userService.updateUserPasswordById(passwordEncoder.encode(password), user.get().getId());
         return emailService.sendSimpleMail(new EmailDetails(email, body, subject));
     }
 }

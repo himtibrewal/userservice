@@ -1,8 +1,13 @@
 package com.safeway.userservice.sequrity;
 
+import java.io.Reader;
 import java.security.Key;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
+import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +28,17 @@ public class JwtUtils {
     private int jwtExpirationMs;
 
     public String generateJwtToken(UserDetailsImpl userPrincipal) {
-        return generateTokenFromUserId(String.valueOf(userPrincipal.getId()));
+        Claims claims = Jwts.claims().setSubject(String.valueOf(userPrincipal.getId()));
+        claims.put("body", new Gson().toJson(userPrincipal));
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+                .signWith(key(), SignatureAlgorithm.HS256)
+                .compact();
+
+
+       // return generateTokenFromUserId(String.valueOf(userPrincipal.getId()));
     }
 
     public String generateTokenFromUserId(String username) {
@@ -42,6 +57,15 @@ public class JwtUtils {
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key()).build()
                 .parseClaimsJws(token).getBody().getSubject();
+    }
+
+    public UserDetailsImpl getUserDetailsFromJwtToken(String token) {
+        String subject = Jwts.parserBuilder().setSigningKey(key()).build()
+                .parseClaimsJws(token).getBody().getSubject();
+        Claims body =  Jwts.parserBuilder().setSigningKey(key()).build()
+                .parseClaimsJws(token).getBody();
+
+       return new Gson().fromJson((String) body.get("body"), UserDetailsImpl.class);
     }
 
     public boolean validateJwtToken(String authToken) {

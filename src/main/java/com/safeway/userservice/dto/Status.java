@@ -1,2 +1,5 @@
-package com.safeway.userservice.dto;public enum Status {
+package com.safeway.userservice.dto;
+
+public enum Status {
+    ACTIVE, INACTIVE
 }

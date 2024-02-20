@@ -5,12 +5,19 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
-
-
 @Entity
+@Data
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Table(name = "district")
 public class District {
@@ -23,105 +30,39 @@ public class District {
     private String districtName;
 
     @JsonProperty("district_code")
-    private Integer districtCode;
+    private String districtCode;
 
     @JsonProperty("district_abbr")
     private String districtAbbr;
 
-    @JsonProperty("state_id")
-    private Long stateId;
+    @JsonProperty("status")
+    private Integer status =1;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
+    @JoinColumn(name = "state_id", referencedColumnName = "id", nullable = false)
+    private State state;
+
+    @JsonIgnore
     @JsonProperty("created_by")
-    private Integer createdBy;
+    private Long createdBy;
 
+    @JsonIgnore
     @JsonProperty("updated_by")
-    private Integer updatedBy;
+    private Long updatedBy;
 
+    @JsonIgnore
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "created_on", insertable = false, updatable = false)
+    @Column(name = "created_on", insertable = true, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createdOn ;
 
+    @JsonIgnore
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_on", insertable = false)
+    @Column(name = "updated_on", insertable = false, updatable = true)
     private LocalDateTime updatedOn;
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getDistrictName() {
-        return districtName;
-    }
-
-    public void setDistrictName(String districtName) {
-        this.districtName = districtName;
-    }
-
-    public Integer getDistrictCode() {
-        return districtCode;
-    }
-
-    public void setDistrictCode(Integer districtCode) {
-        this.districtCode = districtCode;
-    }
-
-    public String getDistrictAbbr() {
-        return districtAbbr;
-    }
-
-    public void setDistrictAbbr(String districtAbbr) {
-        this.districtAbbr = districtAbbr;
-    }
-
-    public Long getStateId() {
-        return stateId;
-    }
-
-    public void setStateId(Long stateId) {
-        this.stateId = stateId;
-    }
-
-    @JsonIgnore
-    public Integer getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Integer createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    @JsonIgnore
-    public Integer getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(Integer updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    @JsonIgnore
-    public LocalDateTime getCreatedOn() {
-        return createdOn;
-    }
-
-    public void setCreatedOn(LocalDateTime createdOn) {
-        this.createdOn = createdOn;
-    }
-
-    @JsonIgnore
-    public LocalDateTime getUpdatedOn() {
-        return updatedOn;
-    }
-
-    public void setUpdatedOn(LocalDateTime updatedOn) {
-        this.updatedOn = updatedOn;
-    }
 }
 
 

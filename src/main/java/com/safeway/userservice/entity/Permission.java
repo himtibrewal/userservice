@@ -1,4 +1,4 @@
-package com.safeway.userservice.entity.admin;
+package com.safeway.userservice.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -45,6 +45,10 @@ public class Permission {
     private Integer status = 1;
 
     @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "permission", cascade = CascadeType.PERSIST)
+    private Set<RolePermission> rolePermissions;
+
+    @JsonIgnore
     @JsonProperty("created_by")
     private Long createdBy;
 
@@ -54,14 +58,14 @@ public class Permission {
 
     @JsonIgnore
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "created_on", insertable = false, updatable = false)
+    @Column(name = "created_on", insertable = true, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdOn;
+    private LocalDateTime createdOn ;
 
     @JsonIgnore
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_on", insertable = false)
+    @Column(name = "updated_on", insertable = true, updatable = true)
     private LocalDateTime updatedOn;
 
 }

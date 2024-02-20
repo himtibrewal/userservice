@@ -1,35 +1,33 @@
 package com.safeway.userservice.service;
 
 import com.safeway.userservice.dto.UserDetailsDao;
+import com.safeway.userservice.entity.Role;
+import com.safeway.userservice.entity.RolePermission;
 import com.safeway.userservice.entity.User;
+import com.safeway.userservice.entity.UserRole;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface UserService {
-    Optional<User> getUserById(Long id);
-
-    boolean existsByEmailOrMobile(String email, String mobile);
-
     User saveUser(User user);
-
-    void updateUserPasswordById(String password, Long id);
-
-    //UserRoles saveUserRoles(UserRoles userRoles);
-
-    Optional<User> findUserByEmail(String email);
-
-    Optional<User> findUserByMobile(String mobile);
-
+    List<UserRole> saveUserRole(List<UserRole> userRoles);
     List<User> getAllUser();
+    Page<User> getAllUser(Pageable pageable);
+    User getUserById(Long id);
 
+    Set<Long> getAllUserIdByRoleId(Long roleId);
+    List<User> getAllUserByRoleId(Long roleId);
     User updateUser(Long id, User user);
 
-
-
+    void deleteUserRoles(Long userId, Set<Long> roleIds);
     void deleteUser(Long id);
+    User findUserByEmail(String email);
+    User findUserByMobile(String mobile);
 
-    Optional<UserDetailsDao> getUserDetails(String username);
-
-    Optional<UserDetailsDao> getUserDetailsById(Long id);
+    UserDetailsDao getUserDetails(String email);
+    UserDetailsDao getUserDetailsById(Long id);
 }

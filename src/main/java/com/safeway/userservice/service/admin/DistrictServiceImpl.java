@@ -1,11 +1,14 @@
 package com.safeway.userservice.service.admin;
 
 import com.safeway.userservice.entity.admin.District;
+import com.safeway.userservice.exception.ErrorEnum;
+import com.safeway.userservice.exception.NotFoundException;
 import com.safeway.userservice.repository.admin.DistrictRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,13 +23,12 @@ public class DistrictServiceImpl implements DistrictService {
     }
 
     @Override
-    public Optional<District> getDistrictById(Long id) {
-        return districtRepository.findById(id);
-    }
-
-    @Override
-    public List<District> getDistrictByStateId(Long stateId) {
-        return districtRepository.findAllByStateId(stateId);
+    public District getDistrictById(Long id) {
+        Optional<District> district =  districtRepository.findById(id);
+        if(!district.isPresent()){
+            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "State");
+        }
+        return district.get();
     }
 
     @Override
@@ -35,20 +37,18 @@ public class DistrictServiceImpl implements DistrictService {
     }
 
     @Override
-    public District updateDistrict(Long id, District d) {
-        District updateDistrict = districtRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("District not exist with id: " + id));
-        updateDistrict.setDistrictName(d.getDistrictName());
-        updateDistrict.setDistrictCode(d.getDistrictCode());
-        updateDistrict.setDistrictAbbr(d.getDistrictAbbr());
-        updateDistrict.setUpdatedOn(LocalDateTime.now());
-        updateDistrict.setStateId(d.getStateId());
-        return districtRepository.save(updateDistrict);
+    public List<District> getDistrictByStateId(Long stateId) {
+        return districtRepository.findAllByStateId(stateId);
     }
 
     @Override
-    public District saveDistrict(District district) {
-        return districtRepository.save(district);
+    public Page<District> getAllDistrictPaginated(Long stateId, Pageable pageable) {
+        return districtRepository.findAllByStateId(stateId, pageable);
+    }
+
+    @Override
+    public District saveDistrict(District state) {
+        return districtRepository.save(state);
     }
 
     @Override

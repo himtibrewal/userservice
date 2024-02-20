@@ -7,7 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/storage/")
-public class BucketController {
+public class BucketController extends BaseController {
 
     private AmazonClient amazonClient;
 
@@ -15,11 +15,6 @@ public class BucketController {
     BucketController(AmazonClient amazonClient) {
         this.amazonClient = amazonClient;
     }
-
-//    @PostMapping("/uploadFile")
-//    public String uploadFile() {
-//        return this.amazonClient.uploadFile(null);
-//    }
 
     @PostMapping("/uploadFile")
     public String uploadFile(@RequestPart(value = "file") MultipartFile file) {

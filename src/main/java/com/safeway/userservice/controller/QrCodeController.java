@@ -25,7 +25,6 @@ public class QrCodeController extends BaseController{
 
     @PostMapping("/qrcode")
     public ResponseEntity<?> generateQrCode() {
-       // checkAuthorizedUser("");
         QrCodeEntity qrCodeEntity = qrCodeService.createQrCode();
         return ResponseEntity.status(HttpStatus.CREATED).body(new Response(qrCodeEntity,
                 "SF-201",
@@ -36,26 +35,34 @@ public class QrCodeController extends BaseController{
     @GetMapping("/qrcode/{key}")
     public ResponseEntity<?> getQrCode(@PathVariable String key) {
         return ok(new Response<QrCodeEntity>(qrCodeService.getQrCodeByKey(key),
-                "QR Code Found Successfully"));
+                "SF-200",
+                "QR Code Found Successfully",
+                HttpStatus.OK.value()));
     }
 
     @PutMapping("/qrcode/{key}")
     public ResponseEntity<?> reCreateQrCode(@PathVariable String key) {
         return ok(new Response<QrCodeEntity>(qrCodeService.reCreateQrCode(key),
-                "QR Code Found Successfully"));
+                "SF-200",
+                "QR Code Found Successfully",
+                HttpStatus.OK.value()));
     }
 
     @GetMapping("/qrcode/{key}/user")
     public ResponseEntity<?> scanQRCode(@PathVariable String key) {
         Long userID = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
         return ok(new Response<QrCodeEntity>(qrCodeService.qrCodeLinkToUser(key, userID),
-                "QR Code Mapped Successfully"));
+                "SF-200",
+                "QR Code Mapped Successfully",
+                HttpStatus.OK.value()));
     }
 
     @GetMapping("/qrcode/{key}/user/{id}")
     public ResponseEntity<?> mapQRCode(@PathVariable String key, @PathVariable Long id) {
         return ok(new Response<QrCodeEntity>(qrCodeService.qrCodeLinkToUser(key, id),
-                "QR Code Mapped Successfully"));
+                "SF-200",
+                "QR Code Mapped Successfully",
+                HttpStatus.OK.value()));
     }
 
 }

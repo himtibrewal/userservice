@@ -1,7 +1,9 @@
-package com.safeway.userservice.controller;
+package com.safeway.userservice.controller.admin;
 
-import com.safeway.userservice.dto.StateDTO;
+import com.safeway.userservice.controller.BaseController;
+import com.safeway.userservice.dto.response.PaginationResponse;
 import com.safeway.userservice.dto.response.Response;
+import com.safeway.userservice.dto.response.StateResponse;
 import com.safeway.userservice.entity.admin.Country;
 import com.safeway.userservice.entity.admin.State;
 import com.safeway.userservice.sequrity.UserDetailsImpl;
@@ -24,7 +26,7 @@ import static com.safeway.userservice.utils.Commons.*;
 
 @RestController
 @RequestMapping("/admin")
-public class StateController {
+public class StateController extends BaseController {
 
     private final CountryService countryService;
     private final StateService stateService;
@@ -34,23 +36,23 @@ public class StateController {
         this.stateService = stateService;
     }
 
-    @PostMapping("/state")
+    @PostMapping("country/{countryId}/state")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> saveState(@Valid @RequestBody StateDTO stateDTO) {
+    public ResponseEntity<?> saveState( @PathVariable Long countryId, @Valid @RequestBody State state) {
         Long userId = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
-        Country country = countryService.getCountryById(stateDTO.getCountryId());
-        State state = State.builder()
-                .stateName(stateDTO.getStateName())
-                .stateCode(stateDTO.getStateCode())
-                .stateAbbr(stateDTO.getStateAbbr())
-                .status(stateDTO.getStatus() == null ? 1 : stateDTO.getStatus())
+        Country country = countryService.getCountryById(countryId);
+        State stateBody = State.builder()
+                .stateName(state.getStateName())
+                .stateCode(state.getStateCode())
+                .stateAbbr(state.getStateAbbr())
+                .status(state.getStatus())
                 .country(country)
                 .createdBy(userId)
                 .createdOn(LocalDateTime.now())
                 .updatedBy(userId)
                 .updatedOn(LocalDateTime.now())
                 .build();
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<State>(stateService.saveState(state),
+        return ResponseEntity.status(HttpStatus.OK).body(new Response<State>(stateService.saveState(stateBody),
                 "SF-200",
                 "State Created Successfully",
                 HttpStatus.OK.value()));
@@ -58,62 +60,60 @@ public class StateController {
 
     @GetMapping("/country/{countryId}/state")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> getAllState(
-            @RequestParam(name = "paginated", defaultValue = "false") boolean paginated,
+    public ResponseEntity<?> getAllStateByCountry(
+            @RequestParam(name = "paginated", defaultValue = PAGINATED_DEFAULT) boolean paginated,
             @RequestParam(name = "page", defaultValue = PAGE_O) int page,
             @PathVariable Long countryId,
             @RequestParam(defaultValue = PAGE_SIZE) int size,
             @RequestParam(name = "sort_by", defaultValue = SORT_BY_ID) String sortBy) {
         Country country = countryService.getCountryById(countryId);
-        Response<List<State>> response = null;
         if (paginated) {
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).ascending());
             Page<State> states = stateService.getAllStatePaginated(country.getId(), pageable);
-            response = Response.<List<State>>builder()
+            PaginationResponse<List<State>> response = PaginationResponse.<List<State>>builder()
                     .data(states.getContent())
                     .totalPages(states.getTotalPages())
-                    .currenPage(states.getNumber())
+                    .currentPage(states.getNumber())
                     .totalItems(states.getTotalElements())
                     .responseCode("SF-200")
                     .responseMessage("State Found Successfully")
                     .responseStatus(HttpStatus.OK.value())
                     .build();
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } else {
-            List<State> states = stateService.getAllState();
-            response = Response.<List<State>>builder()
+            List<State> states = stateService.getStateByCountryId(country.getId());
+            Response<List<State>> response = Response.<List<State>>builder()
                     .data(states)
                     .responseCode("SF-200")
                     .responseMessage("State Found Successfully")
                     .responseStatus(HttpStatus.OK.value())
                     .build();
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         }
-
-
-        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/state/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> getStateById(@PathVariable Long id) {
-        State state = stateService.getStateById(id);
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<State>(state,
+        StateResponse state = stateService.getStateByIdWithCountry(id);
+        return ResponseEntity.status(HttpStatus.OK).body(new Response<StateResponse>(state,
                 "SF-200",
                 "State Found Successfully",
                 HttpStatus.OK.value()));
     }
 
-    @PutMapping("/state/{id}")
+    @PutMapping("country/{countryId}/state/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> updateState(@PathVariable("id") Long id, @RequestBody StateDTO stateDTO) {
+    public ResponseEntity<?> updateState(@PathVariable Long countryId, @PathVariable("id") Long id, @RequestBody State state) {
         Long userId = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
-        Country country = countryService.getCountryById(stateDTO.getCountryId());
+        Country country = countryService.getCountryById(countryId);
         State state1 = stateService.getStateById(id);
-        State state = State.builder()
+        State stateBody = State.builder()
                 .id(id)
-                .stateName(stateDTO.getStateName())
-                .stateCode(stateDTO.getStateCode())
-                .stateAbbr(stateDTO.getStateAbbr())
-                .status(stateDTO.getStatus() == null ? 1 : stateDTO.getStatus())
+                .stateName(state.getStateName())
+                .stateCode(state.getStateCode())
+                .stateAbbr(state.getStateAbbr())
+                .status(state.getStatus())
                 .country(country)
                 .createdBy(state1.getCreatedBy())
                 .createdOn(state1.getCreatedOn())
@@ -122,7 +122,7 @@ public class StateController {
                 .build();
         state.setUpdatedBy(userId);
         state.setUpdatedOn(LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<State>(stateService.saveState(state),
+        return ResponseEntity.status(HttpStatus.OK).body(new Response<State>(stateService.saveState(stateBody),
                 "SF-200",
                 "State Updated Successfully",
                 HttpStatus.OK.value()));

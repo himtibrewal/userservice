@@ -5,10 +5,22 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.context.annotation.Lazy;
 
 import java.time.LocalDateTime;
 
 @Entity
+@Data
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Table(name = "state")
 public class State {
@@ -21,104 +33,38 @@ public class State {
     private String stateName;
 
     @JsonProperty("state_code")
-    private Integer stateCode;
+    private String stateCode;
 
     @JsonProperty("state_abbr")
     private String stateAbbr;
 
-    @JsonProperty("country_id")
-    private Long countryId;
+    @JsonProperty("status")
+    private Integer status = 1;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
+    @JoinColumn(name = "country_id", referencedColumnName = "id", nullable = false)
+    private Country country;
+
+    @JsonIgnore
     @JsonProperty("created_by")
-    private Integer createdBy;
+    private Long createdBy;
 
+    @JsonIgnore
     @JsonProperty("updated_by")
-    private Integer updatedBy;
+    private Long updatedBy;
 
+    @JsonIgnore
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "created_on", insertable = false, updatable = false)
+    @Column(name = "created_on", insertable = true, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createdOn ;
 
+    @JsonIgnore
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_on", insertable = false)
+    @Column(name = "updated_on", insertable = false, updatable = true)
     private LocalDateTime updatedOn;
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getStateName() {
-        return stateName;
-    }
-
-    public void setStateName(String stateName) {
-        this.stateName = stateName;
-    }
-
-    public Integer getStateCode() {
-        return stateCode;
-    }
-
-    public void setStateCode(Integer stateCode) {
-        this.stateCode = stateCode;
-    }
-
-    public String getStateAbbr() {
-        return stateAbbr;
-    }
-
-    public void setStateAbbr(String stateAbbr) {
-        this.stateAbbr = stateAbbr;
-    }
-
-    public Long getCountryId() {
-        return countryId;
-    }
-
-    public void setCountryId(Long countryId) {
-        this.countryId = countryId;
-    }
-
-    @JsonIgnore
-    public Integer getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Integer createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    @JsonIgnore
-    public Integer getUpdatedBy() {
-        return updatedBy;
-    }
-
-    public void setUpdatedBy(Integer updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    @JsonIgnore
-    public LocalDateTime getCreatedOn() {
-        return createdOn;
-    }
-
-    public void setCreatedOn(LocalDateTime createdOn) {
-        this.createdOn = createdOn;
-    }
-
-    @JsonIgnore
-    public LocalDateTime getUpdatedOn() {
-        return updatedOn;
-    }
-
-    public void setUpdatedOn(LocalDateTime updatedOn) {
-        this.updatedOn = updatedOn;
-    }
 }
 

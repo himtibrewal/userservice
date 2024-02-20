@@ -26,22 +26,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<UserDetailsDao> userDetails = userService.getUserDetails(username);
-        if (userDetails.isPresent()) {
-            return UserDetailsImpl.build(userDetails.get());
-        }
-        // if this is thrown, then we won't generate JWT token.
-        throw new UsernameNotFoundException(username);
+        return UserDetailsImpl.build(userService.getUserDetails(username));
     }
 
     @Transactional
     public UserDetails loadUserByUserId(String userId) throws UsernameNotFoundException {
-        Optional<UserDetailsDao> userDetails = userService.getUserDetailsById(Long.parseLong(userId));
-        if (userDetails.isPresent()) {
-            return UserDetailsImpl.build(userDetails.get());
-        }
-        // if this is thrown, then we won't generate JWT token.
-        throw new UsernameNotFoundException(userId);
+            return UserDetailsImpl.build(userService.getUserDetailsById(Long.parseLong(userId)));
     }
 
 }

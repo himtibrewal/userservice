@@ -6,7 +6,13 @@ import java.util.Random;
 import java.util.UUID;
 
 public class Commons {
+    public static final String PAGE_SIZE = "2";
+    public static final String PAGE_O = "0";
+    public static final String SORT_BY_ID = "id";
+    public static final String TOKEN_TYPE = "Bearer";
 
+    public static final String PAGINATED_DEFAULT = "true";
+    public static final String DEFAULT_PASSWORD = "12345678";
 
     public static String generatePassword() {
         int leftLimit = 48; // numeral '0'

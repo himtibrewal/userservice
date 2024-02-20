@@ -13,12 +13,12 @@ spring:
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-
+#
 #  mail:
 #    host: smtp.gmail.com
 #    port: 587
 #    username: "himanshugkv11@gmail.com"
-#    password: "rxwavpkmlrayvtej"
+#    password: "rxscscscwavpkmlrayvcacacatej"
 #    properties:
 #      mail:
 #        smtp:
@@ -26,13 +26,13 @@ spring:
 #          starttls:
 #            enable: true
 
-
+#
 #amazonProperties:
 ##  endpointUrl: https://s3.us-east-1.amazonaws.com
-#  region: us-east-1
-#  accessKey: AKIA3KVT3VCWHD3GHSKN
-#  secretKey: 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
-#  bucketName: prod-safeway
+#  region: us-oeastp0-1
+#  accessKey: AKIA3KVT3VcscscsCWHD3GHSKN
+#  secretKey: 3aZt2ntXKrCUZOcscscslmX4ZXnWJQN3NuKtnMWr6LlDan
+#  bucketName: 01prod-01safeway0101
 
 
 # App Properties

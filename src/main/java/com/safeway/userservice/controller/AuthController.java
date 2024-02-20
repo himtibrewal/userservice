@@ -29,8 +29,10 @@ public class AuthController extends BaseController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody SignInRequest signInRequest) {
-        return ResponseEntity.ok(
-                new Response(authService.loginUser(signInRequest), "Logged In Successfully"));
+        return ResponseEntity.ok(new Response(authService.loginUser(signInRequest),
+                "SF-200",
+                "Logged In Successfully",
+                HttpStatus.OK.value()));
     }
 
     @PostMapping("/signup")
@@ -50,19 +52,28 @@ public class AuthController extends BaseController {
 
     @PostMapping("/refreshtoken")
     public ResponseEntity<?> refreshtoken(@RequestBody TokenRefreshRequest request) {
-        return ResponseEntity.ok(new Response<>(authService.refreshToken(request), "Token regenerated !!"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new Response(authService.refreshToken(request),
+                "SF-201",
+                "Token regenerated",
+                HttpStatus.CREATED.value()));
     }
 
     @GetMapping("/logout")
     public ResponseEntity<?> logoutUser() {
         authService.logoutUser();
-        return ResponseEntity.ok(new Response<>(null, "Log out successful!"));
+        return ResponseEntity.ok(new Response<>(null,
+                "SF-200",
+                "Log out successful!",
+                HttpStatus.OK.value()));
     }
 
     @PostMapping("/forget")
     public ResponseEntity<?> forgetPassword(@RequestBody ForgetPassword forgetPassword) {
         String value = authService.forgetPassword(forgetPassword.getEmail());
-        return ResponseEntity.status(HttpStatus.OK).body(new Response(value, "Mail Sent Successfully"));
+        return ResponseEntity.status(HttpStatus.OK).body(new Response(value,
+                "SF-200",
+                "Mail Sent Successfully",
+                HttpStatus.OK.value()));
     }
 
 }

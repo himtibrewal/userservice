@@ -34,16 +34,16 @@ public class RefreshTokenService {
         RefreshToken refreshToken = new RefreshToken();
         if (refreshTokenRepository.existsByUserId(userId)) {
             refreshToken = refreshTokenRepository.findByUserId(userId).get();
-            refreshToken.setToken(token);
+            refreshToken.setToken(null);
             refreshToken.setRefToken(UUID.randomUUID().toString());
             refreshToken.setExpiryDate(LocalDateTime.now().plusSeconds(refreshTokenDurationMs / 1000));
         } else {
-            refreshToken.setToken(token);
+            refreshToken.setToken(null);
             refreshToken.setRefToken(UUID.randomUUID().toString());
             refreshToken.setExpiryDate(LocalDateTime.now().plusSeconds(refreshTokenDurationMs / 1000));
             refreshToken.setUserId(userId);
-            refreshTokenRepository.save(refreshToken);
         }
+        refreshTokenRepository.save(refreshToken);
         return refreshToken;
     }
 

@@ -1,15 +1,15 @@
-package com.safeway.userservice.entity.admin;
+package com.safeway.userservice.entity;
 
 import com.fasterxml.jackson.annotation.*;
-import com.safeway.userservice.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Set;
 
 
@@ -21,7 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Table(name = "roles")
+@Table(name = "role")
 public class Role {
 
     @Id
@@ -43,16 +43,13 @@ public class Role {
     @Column(name = "status")
     private Integer status = 1;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinTable(name = "role_permission_mapping",
-            joinColumns =
-            @JoinColumn(name = "role_id", referencedColumnName = "id"),
-            inverseJoinColumns =
-            @JoinColumn(name = "permission_id", referencedColumnName = "id")
-    )
     @JsonIgnore
-    private Set<Permission> permissions;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "role", cascade = CascadeType.ALL)
+    private Set<UserRole> userRoles;
+
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "role", cascade = CascadeType.ALL)
+    private Set<RolePermission> rolePermissions;
 
     @JsonIgnore
     @JsonProperty("created_by")

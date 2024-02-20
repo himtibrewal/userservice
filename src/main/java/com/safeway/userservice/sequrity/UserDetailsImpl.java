@@ -6,12 +6,14 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.safeway.userservice.dto.UserDetailsDao;
-import com.safeway.userservice.entity.admin.Permission;
-import com.safeway.userservice.entity.admin.Role;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
@@ -42,6 +44,9 @@ public class UserDetailsImpl implements UserDetails {
         this.roles = roles;
         this.permissions = permissions;
         this.authorities = authorities;
+    }
+
+    public UserDetailsImpl() {
     }
 
     public static UserDetailsImpl build(UserDetailsDao user) {

@@ -1,9 +1,15 @@
 package com.safeway.userservice.service.admin;
 
 import com.safeway.userservice.entity.Role;
+import com.safeway.userservice.entity.RolePermission;
 import com.safeway.userservice.exception.ErrorEnum;
 import com.safeway.userservice.exception.NotFoundException;
+import com.safeway.userservice.repository.RolePermissionRepository;
+import com.safeway.userservice.repository.UserRoleRepository;
 import com.safeway.userservice.repository.admin.RoleRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -12,76 +18,80 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
-public class RolesServiceImpl implements RolesService {
+public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
 
-    public RolesServiceImpl(RoleRepository roleRepository) {
+    private final RolePermissionRepository rolePermissionRepository;
+
+    private final UserRoleRepository userRoleRepository;
+
+    @Autowired
+    public RoleServiceImpl(RoleRepository roleRepository, RolePermissionRepository rolePermissionRepository, UserRoleRepository userRoleRepository) {
         this.roleRepository = roleRepository;
+        this.rolePermissionRepository = rolePermissionRepository;
+        this.userRoleRepository = userRoleRepository;
     }
 
     @Override
     public Role getRoleById(Long id) {
         Optional<Role> role = roleRepository.findById(id);
         if (!role.isPresent()) {
-            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "roles");
-        }
-        return role.get();
-    }
-
-    @Override
-    public Role getRoleDTOById(Long id) {
-        Optional<Role> role = roleRepository.findById(id);
-        if (!role.isPresent()) {
-            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "roles");
-        }
-        return Role.builder()
-                .id(role.get().getId())
-                .roleName(role.get().getRoleName())
-                .roleCode(role.get().getRoleCode())
-                .status(role.get().getStatus())
-                .description(role.get().getDescription())
-               // .permissionId(role.get().getPermissions().stream().map(Permission::getId).collect(Collectors.toSet()))
-                .build() ;
-    }
-
-    @Override
-    public Role getRoleWithPermission(Long id) {
-        Optional<Role> role = roleRepository.findById(id);
-        if (!role.isPresent()) {
-            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "roles");
+            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "Role");
         }
         return role.get();
     }
 
     @Override
     public List<Role> getAllRole() {
-        List<Role> roleList = roleRepository.findAll();
-        if (roleList.isEmpty()) {
-            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "roles");
-        }
-        return roleList;
+        return roleRepository.findAll();
     }
 
     @Override
-    public Set<Role> findAllByIdInOrderById(List<Long> ids) {
-        Set<Role> roleList = roleRepository.findAllByIdInOrderById(ids);
-        return roleList;
+    public Page<Role> getAllRole(Pageable pageable) {
+        return roleRepository.findAll(pageable);
     }
 
     @Override
     public Role updateRole(Long id, Role r) {
-        Optional<Role> role = roleRepository.findById(id);
-        if (!role.isPresent()) {
-            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "Roles");
-        }
-        Role updateRole = role.get();
-        updateRole.setRoleName(r.getRoleName());
-        updateRole.setRoleCode(r.getRoleCode());
-        updateRole.setDescription(r.getDescription());
-        updateRole.setUpdatedOn(LocalDateTime.now());
-        //updateRole.setPermissions(r.getPermissions());
-        return roleRepository.save(updateRole);
+        Role role = getRoleById(id);
+        role.setRoleName(r.getRoleName());
+        role.setRoleCode(r.getRoleCode());
+        role.setDescription(r.getDescription());
+        role.setStatus(r.getStatus());
+        role.setUpdatedBy(r.getUpdatedBy());
+        role.setUpdatedOn(LocalDateTime.now());
+        return roleRepository.save(role);
+    }
+
+    @Override
+    public Set<Long> getAllRoleIdByPermissionId(Long permissionId) {
+        return rolePermissionRepository.findAllRoleIdByPermissionId(permissionId);
+    }
+
+    @Override
+    public List<Role> getAllRoleByPermissionId(Long permissionId) {
+        return rolePermissionRepository.findAllRoleByPermissionId(permissionId);
+    }
+
+    @Override
+    public Set<Long> getAllRoleIdByUserId(Long userId) {
+        return userRoleRepository.findAllRoleIdByUserId(userId);
+    }
+
+    @Override
+    public List<Role> getAllRoleByUserId(Long userId) {
+        return userRoleRepository.findAllRoleByUserId(userId);
+    }
+
+    @Override
+    public List<RolePermission> saveRolePermission(List<RolePermission> rolePermissions){
+        return rolePermissionRepository.saveAll(rolePermissions);
+    }
+
+    @Override
+    public void deleteRolePermissions(Long roleId, Set<Long> permissionIds){
+         rolePermissionRepository.deleteByRoleIdAndPermissionIds(roleId, permissionIds);
     }
 
     @Override
@@ -92,5 +102,11 @@ public class RolesServiceImpl implements RolesService {
     @Override
     public void deleteRole(Long id) {
         roleRepository.deleteById(id);
+    }
+
+    @Override
+    public Set<Role> findAllByIdInOrderById(List<Long> ids) {
+        Set<Role> roleList = roleRepository.findAllByIdInOrderById(ids);
+        return roleList;
     }
 }

@@ -1,5 +1,7 @@
-package com.safeway.userservice.controller;
+package com.safeway.userservice.controller.admin;
 
+import com.safeway.userservice.controller.BaseController;
+import com.safeway.userservice.dto.response.PaginationResponse;
 import com.safeway.userservice.dto.response.Response;
 import com.safeway.userservice.entity.admin.Country;
 import com.safeway.userservice.sequrity.UserDetailsImpl;
@@ -21,7 +23,7 @@ import static com.safeway.userservice.utils.Commons.*;
 
 @RestController
 @RequestMapping("/admin")
-public class CountryController {
+public class CountryController extends BaseController {
 
     private final CountryService countryService;
 
@@ -46,35 +48,33 @@ public class CountryController {
     @GetMapping("/country")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> getAllCountry(
-            @RequestParam(name = "paginated", defaultValue = "false") boolean paginated,
+            @RequestParam(name = "paginated", defaultValue = PAGINATED_DEFAULT) boolean paginated,
             @RequestParam(name = "page", defaultValue = PAGE_O) int page,
             @RequestParam(defaultValue = PAGE_SIZE) int size,
             @RequestParam(name = "sort_by", defaultValue = SORT_BY_ID) String sortBy) {
-        Response<List<Country>> response = null;
         if (paginated) {
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).ascending());
             Page<Country> countries = countryService.getAllCountryPageable(pageable);
-            response = Response.<List<Country>>builder()
+            PaginationResponse<List<Country>> response = PaginationResponse.<List<Country>>builder()
                     .data(countries.getContent())
                     .totalPages(countries.getTotalPages())
-                    .currenPage(countries.getNumber())
+                    .currentPage(countries.getNumber())
                     .totalItems(countries.getTotalElements())
                     .responseCode("SF-200")
                     .responseMessage("Country Found Successfully")
                     .responseStatus(HttpStatus.OK.value())
                     .build();
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         } else {
             List<Country> countries = countryService.getAllCountry();
-            response = Response.<List<Country>>builder()
+            Response<List<Country>> response = Response.<List<Country>>builder()
                     .data(countries)
                     .responseCode("SF-200")
                     .responseMessage("Country Found Successfully")
                     .responseStatus(HttpStatus.OK.value())
                     .build();
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         }
-
-
-        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/country/{id}")

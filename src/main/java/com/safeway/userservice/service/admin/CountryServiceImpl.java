@@ -1,7 +1,11 @@
 package com.safeway.userservice.service.admin;
 
 import com.safeway.userservice.entity.admin.Country;
+import com.safeway.userservice.exception.ErrorEnum;
+import com.safeway.userservice.exception.NotFoundException;
 import com.safeway.userservice.repository.admin.CountryRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,8 +22,12 @@ public class CountryServiceImpl implements CountryService {
     }
 
     @Override
-    public Optional<Country> getCountryById(Long id) {
-        return countryRepository.findById(id);
+    public Country getCountryById(Long id) {
+        Optional<Country> country =  countryRepository.findById(id);
+        if(!country.isPresent()){
+            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "Country");
+        }
+       return country.get();
     }
 
     @Override
@@ -28,14 +36,20 @@ public class CountryServiceImpl implements CountryService {
     }
 
     @Override
+    public Page<Country> getAllCountryPageable(Pageable pageable) {
+        return countryRepository.findAll(pageable);
+    }
+
+    @Override
     public Country updateCountry(Long id, Country c) {
-        Country updateCountry = countryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Country not exist with id: " + id));
-        updateCountry.setCountryName(c.getCountryName());
-        updateCountry.setCountryCode(c.getCountryCode());
-        updateCountry.setCountryAbbr(c.getCountryAbbr());
-        updateCountry.setUpdatedOn(LocalDateTime.now());
-        return countryRepository.save(updateCountry);
+        Country country =  getCountryById(id);
+        country.setCountryName(c.getCountryName());
+        country.setCountryCode(c.getCountryCode());
+        country.setCountryAbbr(c.getCountryAbbr());
+        country.setStatus(c.getStatus());
+        country.setUpdatedBy(c.getUpdatedBy());
+        country.setUpdatedOn(LocalDateTime.now());
+        return countryRepository.save(country);
     }
 
     @Override
