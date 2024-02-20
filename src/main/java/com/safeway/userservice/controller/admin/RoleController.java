@@ -1,11 +1,11 @@
 package com.safeway.userservice.controller.admin;
 
 import com.safeway.userservice.controller.BaseController;
+import com.safeway.userservice.dto.request.RoleRequest;
 import com.safeway.userservice.dto.response.PaginationResponse;
 import com.safeway.userservice.dto.response.Response;
-import com.safeway.userservice.entity.Permission;
-import com.safeway.userservice.entity.Role;
-import com.safeway.userservice.entity.RolePermission;
+import com.safeway.userservice.dto.response.RoleResponse;
+import com.safeway.userservice.entity.*;
 import com.safeway.userservice.sequrity.UserDetailsImpl;
 import com.safeway.userservice.service.admin.PermissionService;
 import com.safeway.userservice.service.admin.RoleService;
@@ -20,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,13 +41,33 @@ public class RoleController extends BaseController {
 
     @PostMapping("/role")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> saveRole(@Valid @RequestBody Role role) {
+    public ResponseEntity<?> saveRole(@Valid @RequestBody RoleRequest roleRequest) {
         Long userId = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
-        role.setCreatedBy(userId);
-        role.setUpdatedBy(userId);
-        role.setCreatedOn(LocalDateTime.now());
-        role.setUpdatedOn(LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<Role>(roleService.saveRole(role),
+
+        Role role = Role.builder()
+                .roleName(roleRequest.getRoleName())
+                .roleCode(roleRequest.getRoleCode())
+                .description(roleRequest.getDescription())
+                .status(roleRequest.getStatus())
+                .build();
+
+        Role role1 = roleService.saveRole(role);
+
+        List<RolePermission> rolePermissions = roleRequest.getPermissionIds().stream().map(key -> {
+            return RolePermission.builder()
+                    .role(Role.builder().id(role1.getId()).build())
+                    .permission(Permission.builder().id(key).build())
+                    .createdBy(userId)
+                    .updatedBy(userId)
+                    .createdOn(LocalDateTime.now())
+                    .updatedOn(LocalDateTime.now())
+                    .build();
+        }).collect(Collectors.toList());
+
+        List<RolePermission> rolePermissions1 = roleService.saveRolePermission(rolePermissions);
+        role1.setRolePermissions(new HashSet<>(rolePermissions1));
+
+        return ResponseEntity.status(HttpStatus.OK).body(new Response<Role>(role1,
                 "SF-200",
                 "Role Created Successfully",
                 HttpStatus.OK.value()));
@@ -84,11 +105,30 @@ public class RoleController extends BaseController {
         }
     }
 
+//    @GetMapping("/role/{id}")
+//    @ResponseStatus(HttpStatus.OK)
+//    public ResponseEntity<?> getRoleById(@PathVariable Long id) {
+//        Role role = roleService.getRoleById(id);
+//        return ResponseEntity.status(HttpStatus.OK).body(new Response<Role>(role,
+//                "SF-200",
+//                "Role Found Successfully",
+//                HttpStatus.OK.value()));
+//    }
+
     @GetMapping("/role/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> getRoleById(@PathVariable Long id) {
+    public ResponseEntity<?> getRoleByIdWithPermission(@PathVariable Long id) {
         Role role = roleService.getRoleById(id);
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<Role>(role,
+        List<Permission> permission = permissionService.getAllPermissionByRole(role.getId());
+        RoleResponse response = RoleResponse.builder()
+                .id(role.getId())
+                .roleCode(role.getRoleCode())
+                .roleName(role.getRoleName())
+                .description(role.getDescription())
+                .status(role.getStatus())
+                .permissionList(permission)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(new Response<RoleResponse>(response,
                 "SF-200",
                 "Role Found Successfully",
                 HttpStatus.OK.value()));
@@ -107,11 +147,53 @@ public class RoleController extends BaseController {
 
     @PutMapping("/role/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> updateRole(@PathVariable("id") Long id, @Valid @RequestBody Role role) {
+    public ResponseEntity<?> updateRole(@PathVariable("id") Long id, @Valid @RequestBody RoleRequest roleRequest) {
         Long userId = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
-        role.setUpdatedBy(userId);
-        role.setUpdatedOn(LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<Role>(roleService.updateRole(id, role),
+
+        Role role = Role.builder()
+                .id(id)
+                .roleName(roleRequest.getRoleName())
+                .roleCode(roleRequest.getRoleCode())
+                .status(roleRequest.getStatus())
+                .description(roleRequest.getDescription())
+                .updatedBy(userId)
+                .updatedOn(LocalDateTime.now())
+                .build();
+
+        Role role1 = roleService.updateRole(id, role);
+
+        Set<Long> permissionIdsByRole = permissionService.getAllPermissionIdByRole(id);
+
+        Set<Long> insertMapping = roleRequest.getPermissionIds()
+                .stream()
+                .filter(e -> !permissionIdsByRole.contains(e))
+                .collect(Collectors.toSet());
+
+        Set<Long> deleteMapping = permissionIdsByRole
+                .stream()
+                .filter(e -> ! roleRequest.getPermissionIds().contains(e))
+                .collect(Collectors.toSet());
+
+        List<RolePermission> rolePermissions = insertMapping.stream().map(key -> {
+            return RolePermission.builder()
+                    .permission(Permission.builder().id(key).build())
+                    .role(Role.builder().id(id).build())
+                    .createdBy(userId)
+                    .updatedBy(userId)
+                    .createdOn(LocalDateTime.now())
+                    .updatedOn(LocalDateTime.now())
+                    .build();
+        }).collect(Collectors.toList());
+
+        if(deleteMapping.size() > 0){
+            roleService.deleteRolePermissions(id, deleteMapping);
+        }
+
+        if(insertMapping.size() >0){
+            roleService.saveRolePermission(rolePermissions);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(new Response<Role>(role1,
                 "SF-200",
                 "Role Updated Successfully",
                 HttpStatus.OK.value()));

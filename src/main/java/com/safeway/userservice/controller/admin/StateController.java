@@ -10,6 +10,7 @@ import com.safeway.userservice.sequrity.UserDetailsImpl;
 import com.safeway.userservice.service.admin.CountryService;
 import com.safeway.userservice.service.admin.StateService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -31,6 +32,7 @@ public class StateController extends BaseController {
     private final CountryService countryService;
     private final StateService stateService;
 
+    @Autowired
     public StateController(CountryService countryService, StateService stateService) {
         this.countryService = countryService;
         this.stateService = stateService;

@@ -1,6 +1,7 @@
 package com.safeway.userservice.controller.admin;
 
 import com.safeway.userservice.controller.BaseController;
+import com.safeway.userservice.dto.response.DistrictResponse;
 import com.safeway.userservice.dto.response.PaginationResponse;
 import com.safeway.userservice.dto.response.Response;
 import com.safeway.userservice.entity.admin.District;
@@ -9,6 +10,7 @@ import com.safeway.userservice.sequrity.UserDetailsImpl;
 import com.safeway.userservice.service.admin.DistrictService;
 import com.safeway.userservice.service.admin.StateService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +32,7 @@ public class CityController extends BaseController {
     private final StateService stateService;
     private final DistrictService districtService;
 
+    @Autowired
     public CityController(StateService stateService, DistrictService districtService) {
         this.stateService = stateService;
         this.districtService = districtService;
@@ -70,8 +73,8 @@ public class CityController extends BaseController {
     @GetMapping("/district/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> getDistrictById(@PathVariable Long id) {
-        District district = districtService.getDistrictById(id);
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<District>(district,
+        DistrictResponse district = districtService.getDistrictByIdWithStateANDCountry(id);
+        return ResponseEntity.status(HttpStatus.OK).body(new Response<DistrictResponse>(district,
                 "SF-200",
                 "District Found Successfully",
                 HttpStatus.OK.value()));

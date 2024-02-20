@@ -18,5 +18,7 @@ public interface StateRepository extends JpaRepository<State, Long> {
 
     @Query("select s from State s WHERE s.country.id = ?1")
     Page<State> findAllByCountryId(Long countryId, Pageable pageable);
+    @Query("select s from State s left join District d ON s.id = d.state.id WHERE d.id = ?1")
+    Optional<State> getStateByDistrictId(Long districtId);
 }
 
