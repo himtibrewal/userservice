@@ -1,7 +1,6 @@
 server:
   port: 8080
 
-
 spring:
   jpa:
     show-sql: true
@@ -13,26 +12,26 @@ spring:
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-#
-#  mail:
-#    host: smtp.gmail.com
-#    port: 587
-#    username: "himanshugkv11@gmail.com"
-#    password: "rxscscscwavpkmlrayvcacacatej"
-#    properties:
-#      mail:
-#        smtp:
-#          auth: true
-#          starttls:
-#            enable: true
 
-#
-#amazonProperties:
-##  endpointUrl: https://s3.us-east-1.amazonaws.com
-#  region: us-oeastp0-1
-#  accessKey: AKIA3KVT3VcscscsCWHD3GHSKN
-#  secretKey: 3aZt2ntXKrCUZOcscscslmX4ZXnWJQN3NuKtnMWr6LlDan
-#  bucketName: 01prod-01safeway0101
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: "himanshugkv11@gmail.com"
+    password: "rxwavpkmlrayvtej"
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
+amazonProperties:
+  #  endpointUrl: https://s3.us-east-1.amazonaws.com
+  region: us-east-1
+  accessKey: AKIA3KVT3VCWHD3GHSKN
+  secretKey: 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
+  bucketName: prod-safeway
 
 
 # App Properties
@@ -41,6 +40,5 @@ userservice:
     jwtSecret: "======================SAFEWAY=Spring==========================="
     jwtExpirationMs: 86400000
     jwtRefreshExpirationMs: 86400000
-
 
 
