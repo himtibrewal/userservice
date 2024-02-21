@@ -6,7 +6,7 @@ import java.util.Random;
 import java.util.UUID;
 
 public class Commons {
-    public static final String PAGE_SIZE = "2";
+    public static final String PAGE_SIZE = "10";
     public static final String PAGE_O = "0";
     public static final String SORT_BY_ID = "id";
     public static final String TOKEN_TYPE = "Bearer";
@@ -35,5 +35,27 @@ public class Commons {
 
     public static String getUniqueString() {
         return UUID.randomUUID().toString();
+    }
+
+    public static boolean isNull(String str){
+        return str == null;
+    }
+    public static boolean isNotNull(String str){
+        return !isNull(str);
+    }
+
+    public static boolean isEmpty(String str){
+        return str.trim().isEmpty();
+    }
+
+    public static boolean isNotEmpty(String str){
+        return !isEmpty(str);
+    }
+
+    public static boolean isNullOrEmpty(String str) {
+        return (isEmpty(str) || isEmpty(str));
+    }
+    public static boolean isNotNullANDEmpty(String str) {
+        return (isNotNull(str) && isNotEmpty(str));
     }
 }

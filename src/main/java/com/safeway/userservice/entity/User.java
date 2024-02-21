@@ -43,9 +43,6 @@ public class User {
     @Column(name = "`password`", nullable = false)
     private String password;
 
-    @JsonProperty("country_code")
-    private String countryCode;
-
     @JsonProperty("emergency_contact1")
     private String emergencyContact1;
 
@@ -65,8 +62,8 @@ public class User {
     @JsonProperty("state_id")
     private Long stateId;
 
-    @JsonProperty("city_id")
-    private Long cityId;
+    @JsonProperty("district_id")
+    private Long districtId;
 
     @JsonProperty("address1")
     private String address1;

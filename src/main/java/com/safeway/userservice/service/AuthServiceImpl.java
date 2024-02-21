@@ -77,7 +77,6 @@ public class AuthServiceImpl implements AuthService {
                 .email(signUpRequest.getEmail())
                 .mobile(signUpRequest.getMobile())
                 .password(passwordEncoder.encode(signUpRequest.getPassword()))
-                .countryCode("+91")
                 .build();
 
         return null; //userService.saveUser(user);

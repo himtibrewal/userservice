@@ -1,29 +1,29 @@
-package com.safeway.userservice.dto.request;
+package com.safeway.userservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import com.safeway.userservice.entity.Role;
+import com.safeway.userservice.entity.Vehicle;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
+
 import java.util.List;
 
 @Getter
 @Setter
-public class UserRequest {
+@Builder
+public class UserResponse {
+
+    @JsonProperty("id")
+    private Long id;
 
     @JsonProperty("username")
-    @NotBlank(message = "Name is mandatory")
     private String userName;
 
     @JsonProperty("email")
-    @NotBlank(message = "Email is mandatory")
-    @Email
     private String email;
 
-    @NotBlank(message = "Mobile is mandatory")
     @JsonProperty("mobile")
     private String mobile;
 
@@ -57,12 +57,9 @@ public class UserRequest {
     @JsonProperty("status")
     private Integer status = 1;
 
-    @JsonProperty("role_ids")
-    @Size(min = 1)
-    private List<Long> roleIds = new ArrayList<>();
+    @JsonProperty("roles")
+    private List<Role> roles;
 
-    @JsonProperty("vehicle_ids")
-    @Size(min = 1)
-    private List<Long> vehicleIds = new ArrayList<>();
-
+    @JsonProperty("vehicles")
+    private List<Vehicle> vehicles;
 }

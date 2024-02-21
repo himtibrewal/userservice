@@ -107,6 +107,7 @@ public class VehicleController extends BaseController {
                 .model(Objects.requireNonNullElse(vehicle.getModel(),vehicle1.getModel()))
                // .image(Objects.requireNonNullElse(vehicle.getImage(), vehicle1.getImage()))
                 .type(Objects.requireNonNullElse(vehicle.getType(),vehicle1.getType()))
+                .status(vehicle.getStatus())
                 .createdBy(vehicle1.getCreatedBy())
                 .createdOn(vehicle1.getCreatedOn())
                 .updatedBy(userId)
@@ -118,7 +119,7 @@ public class VehicleController extends BaseController {
     }
 
     @PostMapping("vehicle")
-    public ResponseEntity<?> saveUser(@RequestBody Vehicle vehicle) {
+    public ResponseEntity<?> saveVehicle(@RequestBody Vehicle vehicle) {
         Long userId = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
 
         Vehicle updatedVehicle = Vehicle.builder()
@@ -127,6 +128,7 @@ public class VehicleController extends BaseController {
                 .model(vehicle.getModel())
                 .image(vehicle.getImage())
                 .type(vehicle.getType())
+                .status(vehicle.getStatus())
                 .createdBy(userId)
                 .createdOn(LocalDateTime.now())
                 .updatedBy(userId)

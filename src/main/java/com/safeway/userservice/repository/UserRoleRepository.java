@@ -5,10 +5,12 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Set;
 
+@Repository
 public interface UserRoleRepository extends JpaRepository<UserRole, Long> {
 
     @Query("select ur from UserRole ur where ur.user.id IN (?1)")
@@ -31,6 +33,11 @@ public interface UserRoleRepository extends JpaRepository<UserRole, Long> {
     @Transactional
     @Query("delete from UserRole ur where ur.user.id = ?1 AND ur.role.id IN (?2)")
     void deleteByUserIdAndRoleIds(Long userId, Set<Long> roleIds);
+
+    @Modifying
+    @Transactional
+    @Query("delete from UserRole ur where ur.user.id = ?1")
+    void deleteByUserId(Long userId);
 
 
     @Modifying

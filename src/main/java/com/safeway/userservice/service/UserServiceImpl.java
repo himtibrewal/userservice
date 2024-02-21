@@ -6,12 +6,14 @@ import com.safeway.userservice.exception.ErrorEnum;
 import com.safeway.userservice.exception.NotFoundException;
 import com.safeway.userservice.repository.UserRoleRepository;
 import com.safeway.userservice.repository.UserRepository;
+import com.safeway.userservice.repository.UserVehicleRepository;
 import com.safeway.userservice.service.admin.PermissionService;
 import com.safeway.userservice.service.admin.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,14 +26,17 @@ public class UserServiceImpl implements UserService {
 
     private final UserRoleRepository userRoleRepository;
 
+    private final UserVehicleRepository userVehicleRepository;
+
     private final RoleService roleService;
 
     private final PermissionService permissionService;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserRoleRepository userRoleRepository, RoleService roleService, PermissionService permissionService) {
+    public UserServiceImpl(UserRepository userRepository, UserRoleRepository userRoleRepository, UserVehicleRepository userVehicleRepository, RoleService roleService, PermissionService permissionService) {
         this.userRepository = userRepository;
         this.userRoleRepository = userRoleRepository;
+        this.userVehicleRepository = userVehicleRepository;
         this.roleService = roleService;
         this.permissionService = permissionService;
     }
@@ -44,6 +49,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserRole> saveUserRole(List<UserRole> userRoles) {
         return userRoleRepository.saveAll(userRoles);
+    }
+
+    public List<UserVehicle> saveUserVehicle (List<UserVehicle> userVehicles) {
+        return userVehicleRepository.saveAll(userVehicles);
+    }
+
+    @Override
+    public void deleteUserVehicles(Long userId, Set<Long> vehicleIds) {
+        userVehicleRepository.deleteByUserIdAndVehicleIds(userId, vehicleIds);
     }
 
     @Override
@@ -88,21 +102,23 @@ public class UserServiceImpl implements UserService {
         updateUser.setEmail(user.getEmail());
         updateUser.setMobile(user.getMobile());
         updateUser.setPassword(user.getPassword());
-        updateUser.setCountryCode(user.getCountryCode());
         updateUser.setBloodGroup(user.getBloodGroup());
         updateUser.setEmergencyContact1(user.getEmergencyContact1());
         updateUser.setEmergencyContact2(user.getEmergencyContact2());
         updateUser.setStatus(user.getStatus());
         updateUser.setCountryId(user.getCountryId());
         updateUser.setStateId(user.getStateId());
-        updateUser.setCityId(user.getCityId());
+        updateUser.setDistrictId(user.getDistrictId());
         updateUser.setUpdatedBy(user.getUpdatedBy());
         updateUser.setUpdatedOn(user.getUpdatedOn());
         return userRepository.save(updateUser);
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long id) {
+        userRoleRepository.deleteByUserId(id);
+        userVehicleRepository.deleteByUserId(id);
         userRepository.deleteById(id);
     }
 

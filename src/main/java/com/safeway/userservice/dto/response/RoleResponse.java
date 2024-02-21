@@ -2,8 +2,6 @@ package com.safeway.userservice.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.safeway.userservice.entity.Permission;
-import jakarta.persistence.Column;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;

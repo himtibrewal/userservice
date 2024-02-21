@@ -5,6 +5,7 @@ import com.safeway.userservice.dto.response.VehicleResponse;
 import com.safeway.userservice.entity.Vehicle;
 import com.safeway.userservice.exception.ErrorEnum;
 import com.safeway.userservice.exception.NotFoundException;
+import com.safeway.userservice.repository.UserVehicleRepository;
 import com.safeway.userservice.repository.VehicleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -13,15 +14,19 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class VehicleServiceImpl implements VehicleService {
 
     private final VehicleRepository vehicleRepository;
 
+    private final UserVehicleRepository userVehicleRepository;
+
     @Autowired
-    public VehicleServiceImpl(VehicleRepository vehicleRepository) {
+    public VehicleServiceImpl(VehicleRepository vehicleRepository, UserVehicleRepository userVehicleRepository) {
         this.vehicleRepository = vehicleRepository;
+        this.userVehicleRepository = userVehicleRepository;
     }
 
     @Override
@@ -60,5 +65,25 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public void deleteVehicle(Long id) {
         vehicleRepository.deleteById(id);
+    }
+
+    @Override
+    public Set<Long> getAllVehicleIdByUserId(Long userId) {
+        return userVehicleRepository.findAllVehicleIdByUserId(userId);
+    }
+
+    @Override
+    public List<Vehicle> getAllVehicleByUserId(Long userId) {
+        return userVehicleRepository.findAllVehicleByUserId(userId);
+    }
+
+    @Override
+    public Vehicle updateVehicle(Long id, Vehicle vehicle) {
+        return null;
+    }
+
+    @Override
+    public Set<Vehicle> findAllByIdInOrderById(List<Long> ids) {
+        return null;
     }
 }

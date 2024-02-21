@@ -1,10 +1,7 @@
 package com.safeway.userservice.service;
 
 import com.safeway.userservice.dto.UserDetailsDao;
-import com.safeway.userservice.entity.Role;
-import com.safeway.userservice.entity.RolePermission;
-import com.safeway.userservice.entity.User;
-import com.safeway.userservice.entity.UserRole;
+import com.safeway.userservice.entity.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -30,4 +27,8 @@ public interface UserService {
 
     UserDetailsDao getUserDetails(String email);
     UserDetailsDao getUserDetailsById(Long id);
+
+    public List<UserVehicle> saveUserVehicle (List<UserVehicle> userVehicles) ;
+
+    public void deleteUserVehicles(Long userId, Set<Long> vehicleIds) ;
 }

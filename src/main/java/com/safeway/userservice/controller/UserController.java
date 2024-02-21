@@ -3,6 +3,8 @@ package com.safeway.userservice.controller;
 import com.safeway.userservice.dto.request.UserRequest;
 import com.safeway.userservice.dto.response.PaginationResponse;
 import com.safeway.userservice.dto.response.Response;
+import com.safeway.userservice.dto.response.RoleResponse;
+import com.safeway.userservice.dto.response.UserResponse;
 import com.safeway.userservice.entity.*;
 import com.safeway.userservice.exception.ErrorEnum;
 import com.safeway.userservice.exception.NotFoundException;
@@ -58,7 +60,7 @@ public class UserController extends BaseController {
     public ResponseEntity<?> saveUser(@RequestBody UserRequest userRequest) {
         Long userId = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
 
-        String password = userRequest.getPassword() == null
+        String password = isNullOrEmpty(userRequest.getPassword())
                 ? passwordEncoder.encode(DEFAULT_PASSWORD)
                 : passwordEncoder.encode(userRequest.getPassword());
 
@@ -70,11 +72,10 @@ public class UserController extends BaseController {
                 .bloodGroup(userRequest.getBloodGroup())
                 .emergencyContact1(userRequest.getEmergencyContact1())
                 .emergencyContact2(userRequest.getEmergencyContact2())
-                .countryCode(userRequest.getCountryCode())
                 .status(userRequest.getStatus())
                 .countryId(userRequest.getCountryId())
                 .stateId(userRequest.getStateId())
-                .cityId(userRequest.getCityId())
+                .districtId(userRequest.getDistrictId())
                 .address1(userRequest.getAddress1())
                 .address2(userRequest.getAddress2())
                 .createdBy(userId)
@@ -135,10 +136,38 @@ public class UserController extends BaseController {
         }
     }
 
+//    @GetMapping("/user/{id}")
+//    public ResponseEntity<?> getUser(@PathVariable Long id) {
+//        User user = userService.getUserById(id);
+//        return ResponseEntity.status(HttpStatus.OK).body(new Response<User>(user,
+//                "SF-200",
+//                "User Found Successfully",
+//                HttpStatus.OK.value()));
+//    }
+
     @GetMapping("/user/{id}")
-    public ResponseEntity<?> getUser(@PathVariable Long id) {
+    public ResponseEntity<?> getUserWithRoleAndVehicle(@PathVariable Long id) {
         User user = userService.getUserById(id);
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<User>(user,
+        List<Role> roles = roleService.getAllRoleByUserId(user.getId());
+        List<Vehicle> vehicles = vehicleService.getAllVehicleByUserId(user.getId());
+        UserResponse response = UserResponse.builder()
+                .id(user.getId())
+                .userName(user.getUsername())
+                .email(user.getEmail())
+                .mobile(user.getMobile())
+                .status(user.getStatus())
+                .emergencyContact1(user.getEmergencyContact1())
+                .emergencyContact2(user.getEmergencyContact2())
+                .address1(user.getAddress1())
+                .address2(user.getAddress2())
+                .countryId(user.getCountryId())
+                .stateId(user.getStateId())
+                .districtId(user.getDistrictId())
+                .bloodGroup(user.getBloodGroup())
+                .roles(roles)
+                .vehicles(vehicles)
+                .build();
+        return ResponseEntity.status(HttpStatus.OK).body(new Response<UserResponse>(response,
                 "SF-200",
                 "User Found Successfully",
                 HttpStatus.OK.value()));
@@ -250,14 +279,73 @@ public class UserController extends BaseController {
     public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody UserRequest userRequest) {
         Long userId = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
         User user = userService.getUserById(id);
-        Set<Role> roleSet = new HashSet<>();
-        if (userRequest.getRoleIds() != null || !userRequest.getRoleIds().isEmpty()) {
-            roleSet = roleService.findAllByIdInOrderById(userRequest.getRoleIds());
+
+        Set<Long> roleIdsByUser = roleService.getAllRoleIdByUserId(id);
+
+        Set<Long> vehicleIdsByUser = vehicleService.getAllVehicleIdByUserId(id);
+
+        Set<Long> insertMappingRole = userRequest.getRoleIds()
+                .stream()
+                .filter(e -> !roleIdsByUser.contains(e))
+                .collect(Collectors.toSet());
+
+        Set<Long> insertMappingVehicle = userRequest.getVehicleIds()
+                .stream()
+                .filter(e -> !vehicleIdsByUser.contains(e))
+                .collect(Collectors.toSet());
+
+        Set<Long> deleteMappingRole = roleIdsByUser
+                .stream()
+                .filter(e -> !userRequest.getRoleIds().contains(e))
+                .collect(Collectors.toSet());
+
+        Set<Long> deleteMappingVehicle = vehicleIdsByUser
+                .stream()
+                .filter(e -> !userRequest.getVehicleIds().contains(e))
+                .collect(Collectors.toSet());
+
+        List<UserRole> userRoles = insertMappingRole.stream().map(key -> {
+            return UserRole.builder()
+                    .role(Role.builder().id(key).build())
+                    .user(User.builder().id(id).build())
+                    .createdBy(userId)
+                    .updatedBy(userId)
+                    .createdOn(LocalDateTime.now())
+                    .updatedOn(LocalDateTime.now())
+                    .build();
+        }).collect(Collectors.toList());
+
+        List<UserVehicle> userVehicles = insertMappingVehicle.stream().map(key -> {
+            return UserVehicle.builder()
+                    .vehicle(Vehicle.builder().id(key).build())
+                    .user(User.builder().id(id).build())
+                    .createdBy(userId)
+                    .updatedBy(userId)
+                    .createdOn(LocalDateTime.now())
+                    .updatedOn(LocalDateTime.now())
+                    .build();
+        }).collect(Collectors.toList());
+
+        if(deleteMappingRole.size() > 0){
+            userService.deleteUserRoles(id, deleteMappingRole);
         }
 
-        String password = null;
+        if(insertMappingRole.size() >0){
+            userService.saveUserRole(userRoles);
+        }
 
-        if (userRequest.getPassword() != null) {
+
+        if(deleteMappingVehicle.size() > 0){
+            userService.deleteUserVehicles(id, deleteMappingVehicle);
+        }
+
+        if(insertMappingVehicle.size() >0){
+            userService.saveUserVehicle(userVehicles);
+        }
+
+        String password = user.getPassword();
+
+        if (isNotNullANDEmpty(userRequest.getPassword())) {
             password = passwordEncoder.encode(userRequest.getPassword());
         }
 
@@ -271,14 +359,30 @@ public class UserController extends BaseController {
                 .emergencyContact1(Objects.requireNonNullElse(userRequest.getEmergencyContact1(), user.getEmergencyContact1()))
                 .emergencyContact2(Objects.requireNonNullElse(userRequest.getEmergencyContact2(), user.getEmergencyContact2()))
                 .status(Objects.requireNonNullElse(userRequest.getStatus(), user.getStatus()))
+                .address1(Objects.requireNonNullElse(userRequest.getAddress1(), user.getAddress1()))
+                .address2(Objects.requireNonNullElse(userRequest.getAddress2(), user.getAddress2()))
+                .countryId(Objects.requireNonNullElse(userRequest.getCountryId(), user.getCountryId()))
+                .stateId(Objects.requireNonNullElse(userRequest.getStateId(), user.getStateId()))
+                .districtId(Objects.requireNonNullElse(userRequest.getDistrictId(), user.getDistrictId()))
                 .createdBy(user.getCreatedBy())
                 .createdOn(user.getCreatedOn())
                 .updatedBy(userId)
                 .updatedOn(LocalDateTime.now())
                 .build();
-        ;
 
-        return ResponseEntity.ok(new Response<User>(userService.updateUser(id, updatedUser), "SF-201", "User Updated Successfully", HttpStatus.CREATED.value()));
+        User user1 =  userService.saveUser(updatedUser);
+
+        return ResponseEntity.ok(new Response<User>(user1, "SF-201", "User Updated Successfully", HttpStatus.CREATED.value()));
+    }
+
+    @DeleteMapping("/user/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new Response<>(null,
+                "SF-204",
+                "User Deleted Successfully",
+                HttpStatus.OK.value()));
     }
 
 }
