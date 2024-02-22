@@ -38,7 +38,7 @@ amazonProperties:
 userservice:
   app:
     jwtSecret: "======================SAFEWAY=Spring==========================="
-    jwtExpirationMs: 86400000
+    jwtExpirationMs: 30000
     jwtRefreshExpirationMs: 86400000
 
 

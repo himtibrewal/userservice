@@ -4,13 +4,23 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.safeway.userservice.dto.response.SignInResponse;
+import com.safeway.userservice.entity.Permission;
 import com.safeway.userservice.entity.RefreshToken;
+import com.safeway.userservice.exception.ErrorEnum;
+import com.safeway.userservice.exception.NotFoundException;
 import com.safeway.userservice.repository.RefreshTokenRepository;
 import com.safeway.userservice.exception.TokenRefreshException;
+import com.safeway.userservice.sequrity.JwtUtils;
+import com.safeway.userservice.sequrity.UserDetailsImpl;
+import com.safeway.userservice.sequrity.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.safeway.userservice.utils.Commons.TOKEN_TYPE;
 
 
 @Service
@@ -18,16 +28,26 @@ public class RefreshTokenService {
     @Value("${userservice.app.jwtRefreshExpirationMs}")
     private Long refreshTokenDurationMs;
 
-    private RefreshTokenRepository refreshTokenRepository;
+    private final JwtUtils jwtUtils;
+
+    private final  RefreshTokenRepository refreshTokenRepository;
+
+    private final UserDetailsServiceImpl userDetailsService;
 
 
     @Autowired
-    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository) {
+    public RefreshTokenService(JwtUtils jwtUtils, RefreshTokenRepository refreshTokenRepository, UserDetailsServiceImpl userDetailsService) {
+        this.jwtUtils = jwtUtils;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.userDetailsService = userDetailsService;
     }
 
-    public Optional<RefreshToken> findByRefreshToken(String refToken) {
-        return refreshTokenRepository.findAllByRefToken(refToken);
+    public RefreshToken findByRefreshToken(String refToken) {
+        Optional<RefreshToken> refreshToken =  refreshTokenRepository.getFirstByRefToken(refToken);
+        if(refreshToken.isEmpty()){
+            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "authToken");
+        }
+        return refreshToken.get();
     }
 
     public RefreshToken createRefreshToken(Long userId, String token) {
@@ -47,13 +67,25 @@ public class RefreshTokenService {
         return refreshToken;
     }
 
-    public RefreshToken verifyExpiration(RefreshToken token) throws TokenRefreshException {
+    public SignInResponse verifyExpiration(RefreshToken token) {
         if (token.getExpiryDate().compareTo(LocalDateTime.now()) < 0) {
             refreshTokenRepository.delete(token);
-            //   throw new TokenRefreshException(token.getToken(), "Refresh token was expired. Please make a new signin request");
+            throw new TokenRefreshException(ErrorEnum.ERROR_UNAUTHENTICATED);
         }
 
-        return token;
+        UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUserId(token.getUserId());
+        String jwt = jwtUtils.generateJwtToken(userDetails);
+        return SignInResponse.builder()
+                .id(userDetails.getId())
+                .username(userDetails.getUsername())
+                .email(userDetails.getEmail())
+                .mobile(userDetails.getMobile())
+                .accessToken(jwt)
+                .refreshToken(token.getRefToken())
+                .tokenType(TOKEN_TYPE)
+                .roles(userDetails.getRoles())
+                .permissions(userDetails.getPermissions())
+                .build();
     }
 
     @Transactional

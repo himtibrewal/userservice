@@ -1,36 +1,28 @@
 package com.safeway.userservice.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class SignInRequest {
-
     @JsonProperty("username")
     private String username;
 
     @JsonProperty("password")
     private String password;
 
-    public SignInRequest() {
-    }
+    @JsonProperty("type")
+    private String type;
 
-    public SignInRequest(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
+    @JsonProperty("reg_key")
+    private String regKey;
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    @JsonProperty("device_key")
+    private String deviceKey;
 }

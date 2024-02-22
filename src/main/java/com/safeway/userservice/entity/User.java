@@ -77,6 +77,12 @@ public class User {
     @JsonProperty("lon")
     private Double lon;
 
+    @JsonProperty("reg_key")
+    private String regKey;
+
+    @JsonProperty("device_key")
+    private String deviceKey;
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.PERSIST)
     private Set<UserRole> userRoles;
 

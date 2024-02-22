@@ -16,7 +16,7 @@ public interface AuthService {
 
     User registerUser(SignupRequest signUpRequest);
 
-    TokenRefreshResponse refreshToken(TokenRefreshRequest tokenRefreshRequest);
+    SignInResponse refreshToken(TokenRefreshRequest tokenRefreshRequest);
 
     void logoutUser();
 

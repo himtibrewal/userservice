@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.safeway.userservice.utils.Commons.*;
+import static com.safeway.userservice.utils.PermissionConstant.*;
 
 @RestController
 @RequestMapping("/admin")
@@ -43,6 +44,7 @@ public class PermissionController extends BaseController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<?> savePermission(@Valid @RequestBody Permission permission) {
         Long userId = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
+        checkAuthorizedUser(ADD_PERMISSION);
         permission.setCreatedBy(userId);
         permission.setUpdatedBy(userId);
         permission.setCreatedOn(LocalDateTime.now());
@@ -60,7 +62,7 @@ public class PermissionController extends BaseController {
             @RequestParam(name = "page", defaultValue = PAGE_O) int page,
             @RequestParam(defaultValue = PAGE_SIZE) int size,
             @RequestParam(name = "sort_by", defaultValue = SORT_BY_ID) String sortBy) {
-        checkAuthorizedUser("GET_PERMISSION");
+        checkAuthorizedUser(GET_PERMISSION);
         if (paginated) {
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).ascending());
             Page<Permission> permissions = permissionService.getAllPermission(pageable);
@@ -89,6 +91,7 @@ public class PermissionController extends BaseController {
     @GetMapping("/permission/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> getPermissionById(@PathVariable Long id) {
+        checkAuthorizedUser(GET_PERMISSION);
         Permission permission = permissionService.getPermissionById(id);
         return ResponseEntity.status(HttpStatus.OK).body(new Response<Permission>(permission,
                 "SF-200",
@@ -99,6 +102,7 @@ public class PermissionController extends BaseController {
     @GetMapping("/role/{id}/permission")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> getPermissionByRoleId(@PathVariable Long id) {
+        checkAuthorizedUser(GET_PERMISSION);
         List<Permission> permissions = permissionService.getAllPermissionByRole(id);
         return ResponseEntity.status(HttpStatus.OK).body(new Response<List<Permission>>(permissions,
                 "SF-200",
@@ -110,6 +114,7 @@ public class PermissionController extends BaseController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> updatePermission(@PathVariable("id") Long id, @Valid @RequestBody Permission permission) {
         Long userId = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
+        checkAuthorizedUser(EDIT_PERMISSION);
         permission.setUpdatedBy(userId);
         permission.setUpdatedOn(LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.OK).body(new Response<Permission>(permissionService.updatePermission(id, permission),
@@ -123,7 +128,7 @@ public class PermissionController extends BaseController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<?> updateRolePermission(@PathVariable("id") Long id, @RequestBody Set<Long> roleIds) {
         Long userId = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
-
+        checkAuthorizedUser(EDIT_PERMISSION);
         Set<Long> roleIdsByPermission = roleService.getAllRoleIdByPermissionId(id);
 
         Set<Long> insertMapping = roleIds
@@ -164,6 +169,7 @@ public class PermissionController extends BaseController {
     @DeleteMapping("/permission/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<?> deletePermission(@PathVariable Long id) {
+        checkAuthorizedUser(DELETE_PERMISSION);
         permissionService.deletePermission(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new Response<>(null,
                 "SF-204",

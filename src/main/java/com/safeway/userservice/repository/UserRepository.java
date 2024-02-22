@@ -24,4 +24,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findFirstByMobile(String mobile);
 
+    @Modifying
+    @Transactional
+    @Query("UPDATE User u SET u.regKey = ?2, u.deviceKey = ?3 where u.id = ?1")
+    void updateMobileData(Long userId, String regKey, String deviceKey);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE User u SET u.password = ?2 where u.id = ?1")
+    void updateUserPassword(Long userId, String password);
+
+
 }

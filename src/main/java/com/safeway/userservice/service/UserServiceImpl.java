@@ -140,14 +140,30 @@ public class UserServiceImpl implements UserService {
         return user.get();
     }
 
-    //for Auth And JWT Token
     @Override
-    public UserDetailsDao getUserDetails(String email) {
-        return computeUserDetails(findUserByEmail(email));
+    public void updateMobileData(Long userId, String regToken, String deviceKey) {
+         userRepository.updateMobileData(userId, regToken, deviceKey);
     }
+
+    @Override
+    public void updatePassword(Long userId, String password){
+        userRepository.updateUserPassword(userId, password);
+    }
+
+    //for Auth And JWT Token
+
     @Override
     public UserDetailsDao getUserDetailsById(Long id) {
         return computeUserDetails(getUserById(id));
+    }
+    @Override
+    public UserDetailsDao getUserDetailsByEmail(String email) {
+        return computeUserDetails(findUserByEmail(email));
+    }
+
+    @Override
+    public UserDetailsDao getUserDetailsByMobile(String mobile) {
+        return computeUserDetails(findUserByMobile(mobile));
     }
 
     private UserDetailsDao computeUserDetails(User user) {

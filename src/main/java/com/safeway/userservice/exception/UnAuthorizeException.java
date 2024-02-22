@@ -1,20 +1,20 @@
 package com.safeway.userservice.exception;
 
 
-public class UnAuthrizeException extends BaseException {
+public class UnAuthorizeException extends BaseException {
 
     private String message;
 
-    public UnAuthrizeException(ErrorEnum errorCode) {
+    public UnAuthorizeException(ErrorEnum errorCode) {
         super(errorCode);
     }
 
-    public UnAuthrizeException(ErrorEnum errorCode, String message) {
+    public UnAuthorizeException(ErrorEnum errorCode, String message) {
         super(errorCode);
         this.message = message;
     }
 
-    public UnAuthrizeException(ErrorEnum errorCode, Exception originalException) {
+    public UnAuthorizeException(ErrorEnum errorCode, Exception originalException) {
         super(errorCode, originalException);
     }
 

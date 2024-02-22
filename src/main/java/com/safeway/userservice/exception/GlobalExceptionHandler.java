@@ -46,8 +46,8 @@ class GlobalExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(UnAuthrizeException.class)
-    public ResponseEntity<ErrorResponse> handleValidationExceptions(UnAuthrizeException ex) {
+    @ExceptionHandler(UnAuthorizeException.class)
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(UnAuthorizeException ex) {
         logger.error("final error:: {}", ex.getMessage());
         return generateErrorResponse(null, ErrorEnum.ERROR_FORBIDDEN, "User Not Authorized");
     }

@@ -11,24 +11,41 @@ import java.util.Set;
 
 public interface UserService {
     User saveUser(User user);
+
     List<UserRole> saveUserRole(List<UserRole> userRoles);
+
     List<User> getAllUser();
+
     Page<User> getAllUser(Pageable pageable);
+
     User getUserById(Long id);
 
     Set<Long> getAllUserIdByRoleId(Long roleId);
+
     List<User> getAllUserByRoleId(Long roleId);
+
     User updateUser(Long id, User user);
 
+    void updateMobileData(Long userId, String regToken, String deviceKey);
+
+    void updatePassword(Long userId, String password);
+
+
     void deleteUserRoles(Long userId, Set<Long> roleIds);
+
     void deleteUser(Long id);
+
     User findUserByEmail(String email);
+
     User findUserByMobile(String mobile);
 
-    UserDetailsDao getUserDetails(String email);
     UserDetailsDao getUserDetailsById(Long id);
 
-    public List<UserVehicle> saveUserVehicle (List<UserVehicle> userVehicles) ;
+    UserDetailsDao getUserDetailsByEmail(String email);
 
-    public void deleteUserVehicles(Long userId, Set<Long> vehicleIds) ;
+    UserDetailsDao getUserDetailsByMobile(String mobile);
+
+    public List<UserVehicle> saveUserVehicle(List<UserVehicle> userVehicles);
+
+    public void deleteUserVehicles(Long userId, Set<Long> vehicleIds);
 }

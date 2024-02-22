@@ -26,12 +26,20 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return UserDetailsImpl.build(userService.getUserDetails(username));
+        return UserDetailsImpl.build(userService.getUserDetailsByEmail(username));
+    }
+
+    public UserDetails loadUserByEmail(String email) throws UsernameNotFoundException {
+        return UserDetailsImpl.build(userService.getUserDetailsByEmail(email));
+    }
+
+    public UserDetails loadUserByMobile(String mobile) throws UsernameNotFoundException {
+        return UserDetailsImpl.build(userService.getUserDetailsByMobile(mobile));
     }
 
     @Transactional
-    public UserDetails loadUserByUserId(String userId) throws UsernameNotFoundException {
-            return UserDetailsImpl.build(userService.getUserDetailsById(Long.parseLong(userId)));
+    public UserDetails loadUserByUserId(Long userId) throws UsernameNotFoundException {
+            return UserDetailsImpl.build(userService.getUserDetailsById(userId));
     }
 
 }

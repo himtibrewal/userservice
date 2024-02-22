@@ -5,12 +5,9 @@ import com.safeway.userservice.dto.request.SignInRequest;
 import com.safeway.userservice.dto.request.SignupRequest;
 import com.safeway.userservice.dto.request.TokenRefreshRequest;
 import com.safeway.userservice.dto.response.SignInResponse;
-import com.safeway.userservice.dto.response.TokenRefreshResponse;
 import com.safeway.userservice.entity.RefreshToken;
 import com.safeway.userservice.entity.User;
-import com.safeway.userservice.exception.ErrorEnum;
 import com.safeway.userservice.sequrity.JwtUtils;
-import com.safeway.userservice.exception.TokenRefreshException;
 import com.safeway.userservice.sequrity.UserDetailsImpl;
 import com.safeway.userservice.service.admin.EmailService;
 import com.safeway.userservice.service.admin.RoleService;
@@ -57,14 +54,29 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public SignInResponse loginUser(SignInRequest signInRequest) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword()));
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest, signInRequest.getPassword()));
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String jwt = jwtUtils.generateJwtToken(userDetails);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId(), jwt);
-        return new SignInResponse(userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(),
-                userDetails.getMobile(), jwt, refreshToken.getRefToken(), TOKEN_TYPE, userDetails.getRoles(),
-                userDetails.getPermissions());
+        userService.updateMobileData(userDetails.getId(), signInRequest.getRegKey(), signInRequest.getDeviceKey());
+        return SignInResponse.builder()
+                .id(userDetails.getId())
+                .username(userDetails.getUsername())
+                .email(userDetails.getEmail())
+                .mobile(userDetails.getMobile())
+                .accessToken(jwt)
+                .refreshToken(refreshToken.getRefToken())
+                .tokenType(TOKEN_TYPE)
+                .roles(userDetails.getRoles())
+                .permissions(userDetails.getPermissions())
+                .build();
 
+    }
+
+    @Override
+    public SignInResponse refreshToken(TokenRefreshRequest request) {
+        RefreshToken refreshToken = refreshTokenService.findByRefreshToken(request.getRefreshToken());
+        return refreshTokenService.verifyExpiration(refreshToken);
     }
 
     @Override
@@ -82,20 +94,6 @@ public class AuthServiceImpl implements AuthService {
         return null; //userService.saveUser(user);
     }
 
-    @Override
-    public TokenRefreshResponse refreshToken(TokenRefreshRequest request) throws TokenRefreshException {
-        String requestRefreshToken = request.getRefreshToken();
-        return refreshTokenService.findByRefreshToken(requestRefreshToken)
-                .map(refreshTokenService::verifyExpiration)
-//                .map(rt -> userService.getUserById(rt.getUserId()))
-                .map(user -> {
-                    String token =  null; // jwtUtils.generateTokenFromUserId(String.valueOf(user.getId()));
-                    return new TokenRefreshResponse(token, requestRefreshToken, "Bearer");
-                })
-                .orElseThrow(() -> {
-                    throw new TokenRefreshException(ErrorEnum.ERROR_BAD_REQUEST);
-                });
-    }
 
     @Override
     public void logoutUser() {
@@ -107,14 +105,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String forgetPassword(String email) {
-        Optional<User> user =  null ;///userService.findUserByEmail(email);
-        if (!user.isPresent()) {
-            throw new RuntimeException("User not Available");
-        }
+        User user = userService.findUserByEmail(email);
         String password = generatePassword();
         String subject = "[SAFEWAY] Forget Password";
         String body = "Your New Password is " + password;
-       // userService.updateUserPasswordById(passwordEncoder.encode(password), user.get().getId());
+        userService.updatePassword(user.getId(), passwordEncoder.encode(password));
         return emailService.sendSimpleMail(new EmailDetails(email, body, subject));
     }
 }
