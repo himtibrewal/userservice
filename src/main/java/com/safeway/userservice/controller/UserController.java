@@ -3,12 +3,10 @@ package com.safeway.userservice.controller;
 import com.safeway.userservice.dto.request.UserRequest;
 import com.safeway.userservice.dto.response.PaginationResponse;
 import com.safeway.userservice.dto.response.Response;
-import com.safeway.userservice.dto.response.RoleResponse;
 import com.safeway.userservice.dto.response.UserResponse;
 import com.safeway.userservice.entity.*;
 import com.safeway.userservice.exception.ErrorEnum;
 import com.safeway.userservice.exception.NotFoundException;
-import com.safeway.userservice.sequrity.JwtUtils;
 import com.safeway.userservice.sequrity.UserDetailsImpl;
 import com.safeway.userservice.service.UserService;
 import com.safeway.userservice.service.VehicleService;
@@ -22,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -42,17 +41,13 @@ public class UserController extends BaseController {
 
     private final VehicleService vehicleService;
 
-    private final JwtUtils jwtUtils;
-
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserController(UserService userService, RoleService roleService, VehicleService vehicleService,
-                          JwtUtils jwtUtils, PasswordEncoder passwordEncoder) {
+    public UserController(UserService userService, RoleService roleService, VehicleService vehicleService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.roleService = roleService;
         this.vehicleService = vehicleService;
-        this.jwtUtils = jwtUtils;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -83,6 +78,7 @@ public class UserController extends BaseController {
                 .updatedBy(userId)
                 .updatedOn(LocalDateTime.now())
                 .build();
+
         User user = userService.saveUser(newUser);
 
         List<UserRole> userRoles = userRequest.getRoleIds().stream().map(key -> {
@@ -96,7 +92,24 @@ public class UserController extends BaseController {
                     .build();
         }).collect(Collectors.toList());
 
-        userService.saveUserRole(userRoles);
+        List<UserVehicle> userVehicles = userRequest.getVehicleIds().stream().map(key -> {
+            return UserVehicle.builder()
+                    .user(User.builder().id(user.getId()).build())
+                    .vehicle(Vehicle.builder().id(key).build())
+                    .createdBy(userId)
+                    .updatedBy(userId)
+                    .createdOn(LocalDateTime.now())
+                    .updatedOn(LocalDateTime.now())
+                    .build();
+        }).collect(Collectors.toList());
+
+        if(userRoles.size() > 0){
+            userService.saveUserRole(userRoles);
+        }
+
+        if(userVehicles.size() > 0){
+            userService.saveUserVehicle(userVehicles);
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new Response<User>(user,
                 "SF-201",
@@ -105,7 +118,7 @@ public class UserController extends BaseController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<?> fetchUsers(
+    public ResponseEntity<?> getAllUser(
             @RequestParam(name = "paginated", defaultValue = PAGINATED_DEFAULT) boolean paginated,
             @RequestParam(name = "page", defaultValue = PAGE_O) int page,
             @RequestParam(defaultValue = PAGE_SIZE) int size,
@@ -175,104 +188,12 @@ public class UserController extends BaseController {
 
     @GetMapping("/role/{id}/user")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> getPermissionByRoleId(@PathVariable Long id) {
+    public ResponseEntity<?> getUserByRoleId(@PathVariable Long id) {
         List<User> users = userService.getAllUserByRoleId(id);
         return ResponseEntity.status(HttpStatus.OK).body(new Response<List<User>>(users,
                 "SF-200",
                 "User Found Successfully",
                 HttpStatus.OK.value()));
-    }
-
-    @GetMapping("/user/search")
-    public ResponseEntity<?> fetchUsersBySearchKeys(
-            @RequestParam(required = false) Long id,
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String phone
-           ) {
-
-        List<User> userList = List.of();
-        if(id > 0){
-            userList=  List.of(userService.getUserById(id));
-        } else if (email != null && email.length() > 3) {
-            userList=  List.of(userService.findUserByEmail(email));
-        } else if(phone != null && phone.length() > 3){
-            userList=  List.of(userService.findUserByMobile(phone));
-        } else if(username != null && username.length() > 3){
-            userList=  List.of(userService.findUserByMobile(phone));
-        } else {
-            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "user");
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<List<User>>(userList,
-                "SF-200",
-                "User Found Successfully",
-                HttpStatus.OK.value()));
-    }
-
-    @PutMapping("user")
-    public ResponseEntity<?> updateUser(@RequestBody User user) {
-        Long userId = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
-        user.setUpdatedBy(userId);
-        user.setUpdatedOn(LocalDateTime.now());
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<User>(userService.updateUser(userId, user),
-                "SF-200",
-                "User Updated Successfully",
-                HttpStatus.OK.value()));
-    }
-
-    @PutMapping("/user/{id}/role")
-    @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> updateUserRole(@PathVariable("id") Long id, @RequestBody Set<Long> roleIds) {
-        Long userId = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
-
-        Set<Long> roleIdsByUser = roleService.getAllRoleIdByUserId(id);
-
-        Set<Long> insertMapping = roleIds
-                .stream()
-                .filter(e -> !roleIdsByUser.contains(e))
-                .collect(Collectors.toSet());
-
-        Set<Long> deleteMapping = roleIdsByUser
-                .stream()
-                .filter(e -> !roleIds.contains(e))
-                .collect(Collectors.toSet());
-
-        List<UserRole> userRoles = insertMapping.stream().map(key -> {
-            return UserRole.builder()
-                    .role(Role.builder().id(key).build())
-                    .user(User.builder().id(id).build())
-                    .createdBy(userId)
-                    .updatedBy(userId)
-                    .createdOn(LocalDateTime.now())
-                    .updatedOn(LocalDateTime.now())
-                    .build();
-        }).collect(Collectors.toList());
-
-        if(deleteMapping.size() > 0){
-            userService.deleteUserRoles(id, deleteMapping);
-        }
-
-        if(insertMapping.size() >0){
-            userService.saveUserRole(userRoles);
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<List<UserRole>>(List.of(),
-                "SF-200",
-                "User Role Updated Successfully",
-                HttpStatus.OK.value()));
-    }
-
-    @PutMapping("/user/{id}/vehicle")
-    public ResponseEntity<?> fetchUsers2(
-            @PathVariable Long id,  @RequestBody List<Long> vehicle) {
-        List<User> users = userService.getAllUser();
-
-        return ResponseEntity.status(HttpStatus.OK).body(new Response<List<User>>(users,
-                "SF-200",
-                "User Found Successfully",
-                HttpStatus.OK.value()));
-
     }
 
     @PutMapping("user/{id}")
@@ -373,6 +294,62 @@ public class UserController extends BaseController {
         User user1 =  userService.saveUser(updatedUser);
 
         return ResponseEntity.ok(new Response<User>(user1, "SF-201", "User Updated Successfully", HttpStatus.CREATED.value()));
+    }
+
+
+    @PutMapping("user/{id}/vehicle")
+    public ResponseEntity<?> updateUserVehicle(@PathVariable Long id,  @RequestBody List<Long> vehicleIds) {
+        Long userId = ((UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
+        User user = userService.getUserById(id);
+        Set<Long> vehicleList = vehicleService.getAllVehicleIdByUserId(id);
+        if(vehicleIds.size() != 1){
+            throw new NotFoundException(ErrorEnum.ERROR_BAD_REQUEST);
+        }
+        Vehicle vehicle = vehicleService.getVehicleById(vehicleIds.get(0));
+
+        if(vehicleList.contains(vehicle.getId())){
+            throw new NotFoundException(ErrorEnum.ERROR_VEHICLE_ALREADY_AVAILABLE);
+        }
+
+        UserVehicle userVehicles = UserVehicle.builder()
+                    .vehicle(Vehicle.builder().id(vehicle.getId()).build())
+                    .user(User.builder().id(user.getId()).build())
+                    .createdBy(userId)
+                    .updatedBy(userId)
+                    .createdOn(LocalDateTime.now())
+                    .updatedOn(LocalDateTime.now())
+                    .build();
+
+        List<UserVehicle> userVehicles1 = userService.saveUserVehicle(List.of(userVehicles));
+
+        return ResponseEntity.ok(new Response<List<UserVehicle>>(userVehicles1, "SF-201", "Vehicle Updated Successfully", HttpStatus.CREATED.value()));
+    }
+
+    @GetMapping("/user/search")
+    public ResponseEntity<?> fetchUsersBySearchKeys(
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String phone
+    ) {
+
+        List<User> userList = List.of();
+        if(id > 0){
+            userList=  List.of(userService.getUserById(id));
+        } else if (email != null && email.length() > 3) {
+            userList=  List.of(userService.findUserByEmail(email));
+        } else if(phone != null && phone.length() > 3){
+            userList=  List.of(userService.findUserByMobile(phone));
+        } else if(username != null && username.length() > 3){
+            userList=  List.of(userService.findUserByMobile(phone));
+        } else {
+            throw new NotFoundException(ErrorEnum.ERROR_NOT_FOUND, "user");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(new Response<List<User>>(userList,
+                "SF-200",
+                "User Found Successfully",
+                HttpStatus.OK.value()));
     }
 
     @DeleteMapping("/user/{id}")

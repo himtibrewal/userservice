@@ -137,7 +137,7 @@ public class RoleController extends BaseController {
 
     @GetMapping("/permission/{id}/role")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> getPermissionByRoleId(@PathVariable Long id) {
+    public ResponseEntity<?> getRoleByPermissionId(@PathVariable Long id) {
         List<Role> roles = roleService.getAllRoleByPermissionId(id);
         return ResponseEntity.status(HttpStatus.OK).body(new Response<List<Role>>(roles,
                 "SF-200",

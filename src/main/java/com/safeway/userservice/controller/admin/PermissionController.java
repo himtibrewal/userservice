@@ -60,6 +60,7 @@ public class PermissionController extends BaseController {
             @RequestParam(name = "page", defaultValue = PAGE_O) int page,
             @RequestParam(defaultValue = PAGE_SIZE) int size,
             @RequestParam(name = "sort_by", defaultValue = SORT_BY_ID) String sortBy) {
+        checkAuthorizedUser("GET_PERMISSION");
         if (paginated) {
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).ascending());
             Page<Permission> permissions = permissionService.getAllPermission(pageable);

@@ -42,6 +42,11 @@ public interface RolePermissionRepository extends JpaRepository<RolePermission, 
     @Query("delete from RolePermission rp where rp.role.id = ?1")
     void deleteByRoleId(Long roleId);
 
+    @Modifying
+    @Transactional
+    @Query("delete from RolePermission rp where rp.permission.id = ?1")
+    void deleteByPermissionId(Long permissionId);
+
 
     @Modifying
     @Transactional

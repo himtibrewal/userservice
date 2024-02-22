@@ -45,6 +45,14 @@ class GlobalExceptionHandler {
         return generateErrorResponse(errors, ErrorEnum.ERROR_BAD_REQUEST, "Something went wrong");
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(UnAuthrizeException.class)
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(UnAuthrizeException ex) {
+        logger.error("final error:: {}", ex.getMessage());
+        return generateErrorResponse(null, ErrorEnum.ERROR_FORBIDDEN, "User Not Authorized");
+    }
+
+
     @ExceptionHandler(NotFoundException.class)
     ResponseEntity<ErrorResponse> processNotFoundException(NotFoundException ex) {
         logger.error("final error:: {}", ex.getMessage());

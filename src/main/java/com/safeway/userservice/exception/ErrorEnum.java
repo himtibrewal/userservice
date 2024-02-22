@@ -18,6 +18,8 @@ public enum ErrorEnum {
 
     ERROR_USER_ALREADY_AVAILABLE("SW-400", "User Already Registered !", HttpStatus.BAD_REQUEST),
 
+    ERROR_VEHICLE_ALREADY_AVAILABLE("SW-400", "Vehicle Already Registered !", HttpStatus.BAD_REQUEST),
+
     ERROR_FORBIDDEN("SW-403", "You don't have permission", HttpStatus.FORBIDDEN),
 
     ERROR_NO_ERROR("SW-200", "NO Error", HttpStatus.OK),

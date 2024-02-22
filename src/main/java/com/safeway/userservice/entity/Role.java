@@ -44,11 +44,11 @@ public class Role {
     private Integer status = 1;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "role", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "role")
     private Set<UserRole> userRoles;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "role", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "role")
     private Set<RolePermission> rolePermissions;
 
     @JsonIgnore

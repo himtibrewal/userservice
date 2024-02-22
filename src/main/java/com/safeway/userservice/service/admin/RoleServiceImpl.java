@@ -110,6 +110,7 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     public void deleteRole(Long id) {
         rolePermissionRepository.deleteByRoleId(id);
+        userRoleRepository.deleteByRoleId(id);
         roleRepository.deleteById(id);
     }
 

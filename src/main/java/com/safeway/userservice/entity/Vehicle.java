@@ -47,7 +47,7 @@ public class Vehicle {
     @JsonProperty("status")
     private Integer status;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "vehicle", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "vehicle", cascade = CascadeType.PERSIST)
     private Set<UserVehicle> userVehicles;
 
     @JsonProperty("created_by")
